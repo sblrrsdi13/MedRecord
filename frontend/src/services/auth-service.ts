@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { useAuthStore } from "@/store/auth-store";
 import type { ApiResponse, UserSession } from "@/types/api";
 import type { PatientRegisterInput, RegisterInput } from "@/validations/auth.schema";
 
@@ -9,6 +10,12 @@ export async function login(payload: { email: string; password: string }) {
 
 export async function logout() {
   await api.post("/auth/logout");
+}
+
+export async function refreshSession() {
+  const response = await api.post<ApiResponse<{ accessToken: string }>>("/auth/refresh");
+  useAuthStore.getState().setAccessToken(response.data.data.accessToken);
+  return response.data.data;
 }
 
 export async function registerUser(payload: RegisterInput) {

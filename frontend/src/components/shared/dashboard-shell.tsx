@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { Topbar } from "@/components/shared/topbar";
+import { getMe, refreshSession } from "@/services/auth-service";
 import { useAuthStore } from "@/store/auth-store";
 
 const ADMIN_ALLOWED_ROUTES = ["/dashboard", "/settings", "/announcements", "/notifications", "/users", "/register", "/backup", "/monitoring", "/reports", "/security", "/audit-logs", "/profile"];
@@ -11,14 +12,49 @@ const OPERATIONAL_BLOCKED_ROUTES = ["/settings", "/users", "/register", "/backup
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const role = useAuthStore((state) => state.user?.role);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const setSession = useAuthStore((state) => state.setSession);
+  const clearSession = useAuthStore((state) => state.clearSession);
   const pathname = usePathname();
   const router = useRouter();
+  const [authReady, setAuthReady] = useState(Boolean(accessToken && role));
   const isPatientPortal = role === "PATIENT" && pathname === "/patient-portal";
   const isBlockedPatientRoute = role === "PATIENT" && pathname !== "/patient-portal" && pathname !== "/profile";
   const isBlockedAdminRoute = role === "ADMIN" && !ADMIN_ALLOWED_ROUTES.includes(pathname);
   const isBlockedOperationalRoute = Boolean(role && role !== "ADMIN" && role !== "PATIENT" && OPERATIONAL_BLOCKED_ROUTES.includes(pathname));
 
   useEffect(() => {
+    let mounted = true;
+
+    async function bootstrapSession() {
+      if (accessToken && role) {
+        setAuthReady(true);
+        return;
+      }
+
+      try {
+        const refreshed = await refreshSession();
+        const me = await getMe();
+        if (!mounted) return;
+        setSession(me, refreshed.accessToken);
+        setAuthReady(true);
+      } catch {
+        if (!mounted) return;
+        clearSession();
+        setAuthReady(true);
+        router.replace("/login");
+      }
+    }
+
+    void bootstrapSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, [accessToken, clearSession, role, router, setSession]);
+
+  useEffect(() => {
+    if (!authReady || !role) return;
     if (isBlockedPatientRoute) {
       router.replace("/patient-portal");
       return;
@@ -26,7 +62,17 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     if (isBlockedAdminRoute || isBlockedOperationalRoute) {
       router.replace("/dashboard");
     }
-  }, [isBlockedAdminRoute, isBlockedOperationalRoute, isBlockedPatientRoute, router]);
+  }, [authReady, isBlockedAdminRoute, isBlockedOperationalRoute, isBlockedPatientRoute, role, router]);
+
+  if (!authReady || !role) {
+    return (
+      <div className="theme-surface flex min-h-screen items-center justify-center p-4 text-[#2a3234]">
+        <div className="soft-panel rounded-2xl p-6 text-sm">
+          Menyiapkan sesi akun...
+        </div>
+      </div>
+    );
+  }
 
   if (isPatientPortal) {
     return <div className="theme-surface min-h-screen">{children}</div>;

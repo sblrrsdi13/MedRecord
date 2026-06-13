@@ -13,6 +13,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let refreshPromise: Promise<string> | null = null;
+
+async function refreshAccessToken() {
+  refreshPromise ??= api.post("/auth/refresh")
+    .then((response) => {
+      const accessToken = response.data.data.accessToken as string;
+      useAuthStore.getState().setAccessToken(accessToken);
+      return accessToken;
+    })
+    .catch((error) => {
+      useAuthStore.getState().clearSession();
+      throw error;
+    })
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -22,9 +42,8 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !original?._retry && !isAuthEndpoint) {
       original._retry = true;
-      const response = await api.post("/auth/refresh");
-      useAuthStore.getState().setAccessToken(response.data.data.accessToken);
-      original.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
+      const accessToken = await refreshAccessToken();
+      original.headers.Authorization = `Bearer ${accessToken}`;
       return api(original);
     }
     return Promise.reject(error);

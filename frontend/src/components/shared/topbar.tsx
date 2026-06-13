@@ -18,11 +18,16 @@ export function Topbar() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const userId = useAuthStore((state) => state.user?.id);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const { t } = useLanguage();
 
   useEffect(() => {
+    if (!userId || !accessToken) {
+      setNotifications([]);
+      return;
+    }
     getNotifications().then(setNotifications).catch(() => setNotifications([]));
-  }, []);
+  }, [accessToken, userId]);
 
   useEffect(() => {
     if (!userId) return;

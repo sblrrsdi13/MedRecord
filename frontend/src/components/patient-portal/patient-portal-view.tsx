@@ -116,8 +116,12 @@ export function PatientPortalView() {
   }, []);
 
   useEffect(() => {
+    if (!account?.id || !accessToken) {
+      setNotifications([]);
+      return;
+    }
     getNotifications().then(setNotifications).catch(() => setNotifications([]));
-  }, []);
+  }, [accessToken, account?.id]);
 
   useEffect(() => {
     if (!account?.id) return;
