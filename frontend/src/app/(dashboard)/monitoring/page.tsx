@@ -41,8 +41,9 @@ export default function MonitoringPage() {
     load();
   }, []);
 
-  const memoryUsed = data ? data.resources.memoryTotalBytes - data.resources.memoryFreeBytes : 0;
-  const memoryPercent = data ? Math.round((memoryUsed / data.resources.memoryTotalBytes) * 100) : 0;
+  const hostMemoryUsed = data ? data.resources.memoryTotalBytes - data.resources.memoryFreeBytes : 0;
+  const hostMemoryPercent = data ? Math.round((hostMemoryUsed / data.resources.memoryTotalBytes) * 100) : 0;
+  const heapPercent = data ? Math.round((data.resources.processHeapUsedBytes / Math.max(data.resources.processHeapTotalBytes, 1)) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -51,7 +52,7 @@ export default function MonitoringPage() {
           <p className="text-sm font-bold uppercase tracking-[0.08em] text-[#5f7974]">Monitoring Sistem</p>
           <h1 className="mt-2 text-3xl font-black text-[#2a3234]">System Health Center</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6a746f]">
-            Pantau storage, CPU/RAM, error log, job queue, dan status integrasi lokal.
+            Pantau storage, RAM aplikasi, error log, job queue, dan status integrasi. Metrik RAM utama memakai proses Node agar lebih akurat di cloud.
           </p>
         </div>
         <Button type="button" variant="outline" onClick={load}>
@@ -68,11 +69,24 @@ export default function MonitoringPage() {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <Metric icon={Database} label="Database" value={formatBytes(data.storage.databaseBytes)} helper="Estimasi ukuran PostgreSQL" />
             <Metric icon={HardDrive} label="Backup Storage" value={formatBytes(data.storage.backupBytes)} helper="Folder backend/backups" />
-            <Metric icon={MemoryStick} label="RAM Server" value={`${memoryPercent}%`} helper={`${formatBytes(memoryUsed)} dari ${formatBytes(data.resources.memoryTotalBytes)}`} />
-            <Metric icon={Cpu} label="CPU" value={`${data.resources.cpuCores} Core`} helper={`Uptime ${formatDuration(data.resources.uptimeSeconds)}`} />
+            <Metric icon={MemoryStick} label="RAM Aplikasi" value={formatBytes(data.resources.processRssBytes)} helper={`Heap ${formatBytes(data.resources.processHeapUsedBytes)} / ${formatBytes(data.resources.processHeapTotalBytes)} (${heapPercent}%)`} />
+            <Metric icon={Cpu} label="Runtime Node" value={formatDuration(data.resources.uptimeSeconds)} helper={`Host ${data.resources.cpuCores} core, RAM host ${hostMemoryPercent}%`} />
           </div>
 
           <div className="grid gap-6 xl:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><MemoryStick className="h-5 w-5" /> Detail Resource</CardTitle>
+                <CardDescription>Angka utama memakai proses aplikasi. Info host hanya referensi karena cloud shared dapat membaca kapasitas mesin fisik.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Row title="RSS Process" desc={formatBytes(data.resources.processRssBytes)} status="ok" />
+                <Row title="Heap JavaScript" desc={`${formatBytes(data.resources.processHeapUsedBytes)} / ${formatBytes(data.resources.processHeapTotalBytes)}`} status={heapPercent > 80 ? "warning" : "ok"} />
+                <Row title="External Memory" desc={formatBytes(data.resources.processExternalBytes)} status="ok" />
+                <Row title="Host Memory" desc={`${formatBytes(hostMemoryUsed)} / ${formatBytes(data.resources.memoryTotalBytes)}`} status="info" />
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ListChecks className="h-5 w-5" /> Job Queue</CardTitle>

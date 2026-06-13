@@ -320,6 +320,8 @@ adminSystemRoutes.get("/monitoring", async (_req, res) => {
       memoryFreeBytes: os.freemem(),
       processRssBytes: memory.rss,
       processHeapUsedBytes: memory.heapUsed,
+      processHeapTotalBytes: memory.heapTotal,
+      processExternalBytes: memory.external,
       uptimeSeconds: process.uptime()
     },
     jobQueue: [

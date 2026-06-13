@@ -34,6 +34,8 @@ export type MonitoringResponse = {
     memoryFreeBytes: number;
     processRssBytes: number;
     processHeapUsedBytes: number;
+    processHeapTotalBytes: number;
+    processExternalBytes: number;
     uptimeSeconds: number;
   };
   jobQueue: Array<{ name: string; pending: number; status: string }>;
