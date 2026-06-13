@@ -45,7 +45,7 @@ dashboardRoutes.get("/summary", async (_req, res) => {
     }),
     prisma.visit.findMany({
       where: { visitDate: { gte: startOfDay, lt: endOfDay } },
-      include: { patient: true, polyclinic: true, queue: true, doctor: { include: { user: true } } },
+      include: { patient: true, polyclinic: true, queue: true, doctor: { include: { user: { select: { id: true, name: true, email: true } } } } },
       orderBy: { visitDate: "asc" },
       take: 8
     }),

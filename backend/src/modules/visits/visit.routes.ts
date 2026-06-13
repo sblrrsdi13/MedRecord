@@ -20,9 +20,15 @@ const createVisitSchema = z.object({
 });
 
 visitRoutes.use(authenticate);
-visitRoutes.get("/", async (_req, res) => {
+visitRoutes.get("/", authorize(OPERATIONAL_ROLES), async (_req, res) => {
   const visits = await prisma.visit.findMany({
-    include: { patient: true, doctor: { include: { user: true } }, polyclinic: true, queue: true, payment: true },
+    include: {
+      patient: true,
+      doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
+      polyclinic: true,
+      queue: true,
+      payment: true
+    },
     orderBy: { visitDate: "desc" },
     take: 50
   });

@@ -33,7 +33,7 @@ reportRoutes.get("/detailed", async (_req, res) => {
   ] = await Promise.all([
     prisma.visit.findMany({
       where: { visitDate: { gte: start, lte: end } },
-      include: { patient: true, polyclinic: true, doctor: { include: { user: true } }, payment: true },
+      include: { patient: true, polyclinic: true, doctor: { include: { user: { select: { id: true, name: true, email: true } } } }, payment: true },
       orderBy: { visitDate: "desc" },
       take: 100
     }),
@@ -51,7 +51,7 @@ reportRoutes.get("/detailed", async (_req, res) => {
     }),
     prisma.medicalRecord.findMany({
       where: { createdAt: { gte: start, lte: end }, treatment: { not: null } },
-      include: { patient: true, doctor: { include: { user: true } } },
+      include: { patient: true, doctor: { include: { user: { select: { id: true, name: true, email: true } } } } },
       orderBy: { createdAt: "desc" },
       take: 100
     }),

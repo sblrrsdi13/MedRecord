@@ -2,7 +2,7 @@ import { Router } from "express";
 import { RoleName } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../config/prisma.js";
-import { OPERATIONAL_ROLES } from "../../constants/roles.js";
+import { OPERATIONAL_ROLES, STAFF_ROLES } from "../../constants/roles.js";
 import { authenticate, authorize } from "../../middleware/auth.middleware.js";
 import { validate } from "../../middleware/validate.middleware.js";
 import { created, ok } from "../../utils/api-response.js";
@@ -22,10 +22,10 @@ const createSchema = z.object({
 });
 
 doctorScheduleRoutes.use(authenticate);
-doctorScheduleRoutes.get("/", async (req, res) => {
+doctorScheduleRoutes.get("/", authorize(STAFF_ROLES), async (req, res) => {
   const schedules = await prisma.doctorSchedule.findMany({
     where: req.user?.role === RoleName.DOCTOR ? { doctor: { userId: req.user.id } } : undefined,
-    include: { doctor: { include: { user: true } }, polyclinic: true },
+    include: { doctor: { include: { user: { select: { id: true, name: true, email: true } } } }, polyclinic: true },
     orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }]
   });
   return ok(res, schedules);

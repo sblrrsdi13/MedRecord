@@ -107,7 +107,11 @@ function medicalRecordPayload(body: z.infer<typeof schema>["body"], doctorId: st
 medicalRecordRoutes.use(authenticate);
 medicalRecordRoutes.get("/", authorize(OPERATIONAL_ROLES), async (_req, res) => {
   const records = await prisma.medicalRecord.findMany({
-    include: { patient: true, doctor: { include: { user: true } }, visit: true },
+    include: {
+      patient: true,
+      doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
+      visit: true
+    },
     orderBy: { createdAt: "desc" },
     take: 50
   });
