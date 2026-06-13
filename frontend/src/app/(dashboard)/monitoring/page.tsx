@@ -44,6 +44,8 @@ export default function MonitoringPage() {
   const hostMemoryUsed = data ? data.resources.memoryTotalBytes - data.resources.memoryFreeBytes : 0;
   const hostMemoryPercent = data ? Math.round((hostMemoryUsed / data.resources.memoryTotalBytes) * 100) : 0;
   const heapPercent = data ? Math.round((data.resources.processHeapUsedBytes / Math.max(data.resources.processHeapTotalBytes, 1)) * 100) : 0;
+  const rssStatus = data ? data.resources.processRssBytes > 512 * 1024 * 1024 ? "warning" : "ok" : "ok";
+  const heapStatus = data ? data.resources.processHeapUsedBytes > 256 * 1024 * 1024 ? "warning" : "ok" : "ok";
 
   return (
     <div className="space-y-6">
@@ -80,8 +82,8 @@ export default function MonitoringPage() {
                 <CardDescription>Angka utama memakai proses aplikasi. Info host hanya referensi karena cloud shared dapat membaca kapasitas mesin fisik.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Row title="RSS Process" desc={formatBytes(data.resources.processRssBytes)} status="ok" />
-                <Row title="Heap JavaScript" desc={`${formatBytes(data.resources.processHeapUsedBytes)} / ${formatBytes(data.resources.processHeapTotalBytes)}`} status={heapPercent > 80 ? "warning" : "ok"} />
+                <Row title="RSS Process" desc={formatBytes(data.resources.processRssBytes)} status={rssStatus} />
+                <Row title="Heap JavaScript" desc={`${formatBytes(data.resources.processHeapUsedBytes)} / ${formatBytes(data.resources.processHeapTotalBytes)} (${heapPercent}%)`} status={heapStatus} />
                 <Row title="External Memory" desc={formatBytes(data.resources.processExternalBytes)} status="ok" />
                 <Row title="Host Memory" desc={`${formatBytes(hostMemoryUsed)} / ${formatBytes(data.resources.memoryTotalBytes)}`} status="info" />
               </CardContent>

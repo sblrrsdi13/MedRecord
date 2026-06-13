@@ -6,9 +6,32 @@ import { getPublicSiteSettings } from "@/services/site-settings-service";
 import type { SiteCms } from "@/types/site-cms";
 
 const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";
+const cmsCacheKey = "clinic_site_cms_cache";
+
+function mergeCms(settings: Partial<SiteCms>) {
+  return { ...defaultSiteCms, ...settings };
+}
+
+function readCachedCms() {
+  if (typeof window === "undefined") return defaultSiteCms;
+  try {
+    const cached = window.localStorage.getItem(cmsCacheKey);
+    return cached ? mergeCms(JSON.parse(cached) as Partial<SiteCms>) : defaultSiteCms;
+  } catch {
+    return defaultSiteCms;
+  }
+}
+
+function writeCachedCms(settings: SiteCms) {
+  try {
+    window.localStorage.setItem(cmsCacheKey, JSON.stringify(settings));
+  } catch {
+    // Ignore storage quota/private mode errors.
+  }
+}
 
 export function useSiteCms(enabled = true, realtime = true) {
-  const [cms, setCms] = useState<SiteCms>(defaultSiteCms);
+  const [cms, setCms] = useState<SiteCms>(() => readCachedCms());
 
   useEffect(() => {
     if (!enabled) return;
@@ -22,10 +45,13 @@ export function useSiteCms(enabled = true, realtime = true) {
 
     getPublicSiteSettings()
       .then((settings) => {
-        if (mounted) setCms({ ...defaultSiteCms, ...settings });
+        if (!mounted) return;
+        const nextCms = mergeCms(settings);
+        setCms(nextCms);
+        writeCachedCms(nextCms);
       })
       .catch(() => {
-        if (mounted) setCms(defaultSiteCms);
+        if (mounted) setCms(readCachedCms());
       });
 
     const connectRealtime = () => {
@@ -35,7 +61,9 @@ export function useSiteCms(enabled = true, realtime = true) {
           if (!mounted) return;
           socket = io(socketUrl, { withCredentials: true, transports: ["websocket"] });
           socket.on("cms:updated", (payload: { settings: SiteCms }) => {
-            setCms({ ...defaultSiteCms, ...payload.settings });
+            const nextCms = mergeCms(payload.settings);
+            setCms(nextCms);
+            writeCachedCms(nextCms);
           });
         })
         .catch(() => null);
