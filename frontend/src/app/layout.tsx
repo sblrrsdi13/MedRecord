@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { RootLayoutClient } from "@/components/root-layout-client";
 import { getServerSiteCms } from "@/lib/site-cms-server";
 import "./globals.css";
@@ -23,6 +24,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="id" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <RootLayoutClient initialCms={cms}>{children}</RootLayoutClient>
+        <Analytics />
       </body>
     </html>
   );
