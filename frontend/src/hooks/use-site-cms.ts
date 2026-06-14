@@ -1,12 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { defaultSiteCms } from "@/constants/default-site-cms";
 import { getPublicSiteSettings } from "@/services/site-settings-service";
 import type { SiteCms } from "@/types/site-cms";
 
 const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";
 const cmsCacheKey = "clinic_site_cms_cache";
+type CmsSocket = {
+  disconnect: () => void;
+  on: (event: "cms:updated", listener: (payload: { settings: SiteCms }) => void) => void;
+};
+
+let currentCms = defaultSiteCms;
+let hasReadCache = false;
+let hasFetchedCms = false;
+let fetchPromise: Promise<void> | null = null;
+let cmsSocket: CmsSocket | null = null;
+let socketLoading = false;
+let realtimeSubscriberCount = 0;
+const subscribers = new Set<() => void>();
 
 function mergeCms(settings: Partial<SiteCms>) {
   return { ...defaultSiteCms, ...settings };
@@ -30,43 +43,96 @@ function writeCachedCms(settings: SiteCms) {
   }
 }
 
+function notifyCmsSubscribers() {
+  subscribers.forEach((listener) => listener());
+}
+
+function setCurrentCms(settings: Partial<SiteCms>) {
+  currentCms = mergeCms(settings);
+  writeCachedCms(currentCms);
+  notifyCmsSubscribers();
+}
+
+function ensureCachedCmsRead() {
+  if (hasReadCache) return;
+  hasReadCache = true;
+  currentCms = readCachedCms();
+}
+
+function subscribe(listener: () => void) {
+  subscribers.add(listener);
+  return () => {
+    subscribers.delete(listener);
+  };
+}
+
+function getSnapshot() {
+  ensureCachedCmsRead();
+  return currentCms;
+}
+
+function ensureCmsFetch() {
+  if (hasFetchedCms || fetchPromise) return;
+
+  fetchPromise = getPublicSiteSettings()
+    .then((settings) => {
+      hasFetchedCms = true;
+      setCurrentCms(settings);
+    })
+    .catch(() => {
+      currentCms = readCachedCms();
+      notifyCmsSubscribers();
+    })
+    .finally(() => {
+      fetchPromise = null;
+    });
+}
+
+function startCmsRealtime() {
+  realtimeSubscriberCount += 1;
+  if (cmsSocket || socketLoading) return;
+
+  socketLoading = true;
+  import("socket.io-client")
+    .then(({ io }) => {
+      socketLoading = false;
+      if (realtimeSubscriberCount <= 0) return;
+      cmsSocket = io(socketUrl, { withCredentials: true, transports: ["websocket"] });
+      cmsSocket.on("cms:updated", (payload: { settings: SiteCms }) => {
+        setCurrentCms(payload.settings);
+      });
+    })
+    .catch(() => {
+      socketLoading = false;
+    });
+}
+
+function stopCmsRealtime() {
+  realtimeSubscriberCount = Math.max(0, realtimeSubscriberCount - 1);
+  if (realtimeSubscriberCount === 0) {
+    cmsSocket?.disconnect();
+    cmsSocket = null;
+  }
+}
+
 export function useSiteCms(enabled = true, realtime = true) {
-  const [cms, setCms] = useState<SiteCms>(() => readCachedCms());
+  const cms = useSyncExternalStore(subscribe, getSnapshot, () => defaultSiteCms);
 
   useEffect(() => {
     if (!enabled) return;
-    let mounted = true;
-    let socket: { disconnect: () => void; on: (event: string, listener: (payload: { settings: SiteCms }) => void) => void } | null = null;
     let idleId: number | null = null;
+    let didStartRealtime = false;
     const win = window as Window & {
       requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
       cancelIdleCallback?: (id: number) => void;
     };
 
-    getPublicSiteSettings()
-      .then((settings) => {
-        if (!mounted) return;
-        const nextCms = mergeCms(settings);
-        setCms(nextCms);
-        writeCachedCms(nextCms);
-      })
-      .catch(() => {
-        if (mounted) setCms(readCachedCms());
-      });
+    ensureCmsFetch();
 
     const connectRealtime = () => {
       if (!realtime) return;
-      import("socket.io-client")
-        .then(({ io }) => {
-          if (!mounted) return;
-          socket = io(socketUrl, { withCredentials: true, transports: ["websocket"] });
-          socket.on("cms:updated", (payload: { settings: SiteCms }) => {
-            const nextCms = mergeCms(payload.settings);
-            setCms(nextCms);
-            writeCachedCms(nextCms);
-          });
-        })
-        .catch(() => null);
+      didStartRealtime = true;
+      startCmsRealtime();
     };
 
     if (realtime) {
@@ -78,12 +144,11 @@ export function useSiteCms(enabled = true, realtime = true) {
     }
 
     return () => {
-      mounted = false;
       if (idleId !== null) {
         if (win.cancelIdleCallback) win.cancelIdleCallback(idleId);
         else win.clearTimeout(idleId);
       }
-      socket?.disconnect();
+      if (didStartRealtime) stopCmsRealtime();
     };
   }, [enabled, realtime]);
 

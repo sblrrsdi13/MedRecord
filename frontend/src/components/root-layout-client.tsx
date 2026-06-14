@@ -18,26 +18,19 @@ export function RootLayoutClient({ children }: { children: ReactNode }) {
       });
     };
 
-    const cleanTree = () => {
-      clean(document.documentElement);
-      if (document.body) clean(document.body);
-      document.querySelectorAll("*").forEach(clean);
-    };
-
-    cleanTree();
+    clean(document.documentElement);
+    if (document.body) clean(document.body);
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === "attributes") clean(mutation.target);
-        mutation.addedNodes.forEach(clean);
       });
     });
 
     observer.observe(document.documentElement, {
-      attributes: true,
-      childList: true,
-      subtree: true
+      attributes: true
     });
+    if (document.body) observer.observe(document.body, { attributes: true });
 
     return () => observer.disconnect();
   }, []);

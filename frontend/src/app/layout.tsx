@@ -3,10 +3,10 @@ import { RootLayoutClient } from "@/components/root-layout-client";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Clinic EMR",
+  title: "Smart Clinic Management",
   description: "Sistem rekam medis klinik modern",
   icons: {
-    icon: "/favicon.svg"
+    icon: "/IconTitle.svg"
   }
 };
 
@@ -19,6 +19,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
-
-
-

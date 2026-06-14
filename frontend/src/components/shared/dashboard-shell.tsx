@@ -7,7 +7,7 @@ import { Topbar } from "@/components/shared/topbar";
 import { getMe, refreshSession } from "@/services/auth-service";
 import { useAuthStore } from "@/store/auth-store";
 
-const ADMIN_ALLOWED_ROUTES = ["/dashboard", "/settings", "/announcements", "/notifications", "/users", "/register", "/backup", "/monitoring", "/reports", "/security", "/audit-logs", "/profile"];
+const ADMIN_ALLOWED_ROUTES = ["/dashboard", "/settings", "/announcements", "/notifications", "/users", "/register", "/doctors", "/polyclinics", "/backup", "/monitoring", "/reports", "/security", "/audit-logs", "/profile"];
 const OPERATIONAL_BLOCKED_ROUTES = ["/settings", "/users", "/register", "/backup", "/monitoring", "/reports", "/security", "/audit-logs"];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {

@@ -127,26 +127,43 @@ export function PatientPortalView() {
     if (!account?.id) return;
     let mounted = true;
     let socket: Socket | null = null;
+    let idleId: number | null = null;
+    const win = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
 
-    import("socket.io-client")
-      .then(({ io }) => {
-        if (!mounted) return;
-        socket = io(socketUrl, { withCredentials: true, transports: ["websocket"] });
-        socket.on("notification:new", (payload: { recipientId: string; notification: NotificationItem }) => {
-          if (payload.recipientId !== account.id) return;
-          setNotifications((items) => [payload.notification, ...items.filter((item) => item.id !== payload.notification.id)].slice(0, 30));
-        });
-        socket.on("notification:deleted", (payload: { recipientId: string; id: string }) => {
-          if (payload.recipientId === account.id) setNotifications((items) => items.filter((item) => item.id !== payload.id));
-        });
-        socket.on("notification:cleared", (payload: { recipientId: string }) => {
-          if (payload.recipientId === account.id) setNotifications([]);
-        });
-      })
-      .catch(() => null);
+    const connectSocket = () => {
+      import("socket.io-client")
+        .then(({ io }) => {
+          if (!mounted) return;
+          socket = io(socketUrl, { withCredentials: true, transports: ["websocket"] });
+          socket.on("notification:new", (payload: { recipientId: string; notification: NotificationItem }) => {
+            if (payload.recipientId !== account.id) return;
+            setNotifications((items) => [payload.notification, ...items.filter((item) => item.id !== payload.notification.id)].slice(0, 30));
+          });
+          socket.on("notification:deleted", (payload: { recipientId: string; id: string }) => {
+            if (payload.recipientId === account.id) setNotifications((items) => items.filter((item) => item.id !== payload.id));
+          });
+          socket.on("notification:cleared", (payload: { recipientId: string }) => {
+            if (payload.recipientId === account.id) setNotifications([]);
+          });
+        })
+        .catch(() => null);
+    };
+
+    if (win.requestIdleCallback) {
+      idleId = win.requestIdleCallback(connectSocket, { timeout: 2500 });
+    } else {
+      idleId = win.setTimeout(connectSocket, 900);
+    }
 
     return () => {
       mounted = false;
+      if (idleId !== null) {
+        if (win.cancelIdleCallback) win.cancelIdleCallback(idleId);
+        else win.clearTimeout(idleId);
+      }
       socket?.disconnect();
     };
   }, [account?.id]);
