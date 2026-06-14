@@ -3,8 +3,12 @@
 import { LanguageProvider } from "@/contexts/language-context";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
+import { primeSiteCms } from "@/hooks/use-site-cms";
+import type { SiteCms } from "@/types/site-cms";
 
-export function RootLayoutClient({ children }: { children: ReactNode }) {
+export function RootLayoutClient({ children, initialCms }: { children: ReactNode; initialCms: SiteCms }) {
+  primeSiteCms(initialCms);
+
   useEffect(() => {
     const patterns = [/^bis_/, /^__processed_/];
 

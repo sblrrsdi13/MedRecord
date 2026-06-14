@@ -53,6 +53,12 @@ function setCurrentCms(settings: Partial<SiteCms>) {
   notifyCmsSubscribers();
 }
 
+export function primeSiteCms(settings: Partial<SiteCms>) {
+  if (hasReadCache || hasFetchedCms) return;
+  currentCms = mergeCms(settings);
+  hasReadCache = true;
+}
+
 function ensureCachedCmsRead() {
   if (hasReadCache) return;
   hasReadCache = true;
