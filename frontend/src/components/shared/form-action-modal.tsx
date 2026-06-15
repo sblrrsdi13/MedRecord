@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { RESOURCE_CHANGED_EVENT } from "@/utils/resource-events";
 
 type FormActionModalProps = {
   title: string;
@@ -54,6 +55,13 @@ export function FormModalShell({ title, description, open, onClose, children, cl
 
 export function FormActionModal({ title, description, triggerLabel, children, className }: FormActionModalProps) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeModal = () => setOpen(false);
+    window.addEventListener(RESOURCE_CHANGED_EVENT, closeModal);
+    return () => window.removeEventListener(RESOURCE_CHANGED_EVENT, closeModal);
+  }, [open]);
 
   return (
     <>

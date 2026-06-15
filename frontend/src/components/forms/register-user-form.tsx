@@ -5,9 +5,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { KeyRound, Save, ShieldCheck, UserRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { FormField, FormSection, sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
 import { registerUser } from "@/services/auth-service";
 import { registerSchema, type RegisterInput } from "@/validations/auth.schema";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 const roles: Array<{ value: RegisterInput["role"]; label: string; helper: string }> = [
   { value: "ADMIN", label: "Admin", helper: "Akses penuh sistem" },
@@ -36,6 +38,7 @@ export function RegisterUserForm({ onSuccess }: { onSuccess?: () => void }) {
       const user = await registerUser(values);
       setMessage({ type: "success", text: `User ${user.name} berhasil dibuat sebagai ${user.role}.` });
       form.reset({ name: "", email: "", password: "", role: "RECEPTIONIST" });
+      emitResourceChanged("users");
       onSuccess?.();
     } catch {
       setMessage({ type: "error", text: "Gagal membuat user. Pastikan Anda login sebagai Admin dan email belum dipakai." });
@@ -60,7 +63,7 @@ export function RegisterUserForm({ onSuccess }: { onSuccess?: () => void }) {
       <FormSection icon={KeyRound} title="Akses Login">
         <div className="grid gap-4 md:grid-cols-2">
           <FormField label="Password Awal">
-            <Input id="password" type="password" placeholder="Minimal 8 karakter" className={sharedInputClassName} {...form.register("password")} />
+            <PasswordInput id="password" placeholder="Minimal 8 karakter" inputClassName={sharedInputClassName} {...form.register("password")} />
           </FormField>
           {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
           <FormField label="Role">

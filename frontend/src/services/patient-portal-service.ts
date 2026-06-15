@@ -1,17 +1,19 @@
 import { api } from "./api";
 import type { ApiResponse, Patient, QueueItem } from "@/types/api";
 
+export type PortalVisit = {
+  id: string;
+  visitNo: string;
+  complaint?: string;
+  status: string;
+  visitDate: string;
+  polyclinic?: { name: string };
+  doctor?: { user?: { name: string } };
+};
+
 export type PatientPortalData = {
   patient: Patient | null;
-  visits: Array<{
-    id: string;
-    visitNo: string;
-    complaint?: string;
-    status: string;
-    visitDate: string;
-    polyclinic?: { name: string };
-    doctor?: { user?: { name: string } };
-  }>;
+  visits: PortalVisit[];
   medicalRecords: Array<{
     id: string;
     anamnesis?: string;
@@ -53,6 +55,15 @@ export type PatientPortalData = {
     }>;
   }>;
   queues: QueueItem[];
+  summary?: {
+    visits: number;
+    medicalRecords: number;
+    prescriptions: number;
+    paidPayments: number;
+    pendingPayments: number;
+    queues: number;
+    nextVisit?: PortalVisit | null;
+  };
 };
 
 export async function getPatientPortal() {

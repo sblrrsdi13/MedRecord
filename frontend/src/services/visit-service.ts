@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { ApiResponse, Patient, QueueItem } from "@/types/api";
+import type { ApiResponse, PaginatedResponse, Patient, QueueItem } from "@/types/api";
 
 export type VisitRegistrationRow = {
   id: string;
@@ -35,8 +35,8 @@ export async function createVisit(payload: {
   return response.data.data;
 }
 
-export async function getVisits() {
-  const response = await api.get<ApiResponse<VisitRegistrationRow[]>>("/visits");
+export async function getVisits(params?: { page?: number; limit?: number; search?: string }) {
+  const response = await api.get<ApiResponse<PaginatedResponse<VisitRegistrationRow>>>("/visits", { params });
   return response.data.data;
 }
 

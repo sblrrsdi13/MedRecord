@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createMedicine } from "@/services/medicine-service";
 import { sharedFormStyles, sharedInputClassName } from "@/components/forms/shared-form";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -45,7 +46,8 @@ export function MedicineForm() {
         stock: Number(formData.get("stock")),
         minStock: Number(formData.get("minStock"))
       });
-      setMessage("Obat berhasil disimpan. Refresh tabel untuk melihat data terbaru.");
+      emitResourceChanged("medicines");
+      setMessage("Obat berhasil disimpan.");
     } catch {
       setError("Gagal menyimpan obat. Pastikan kode obat belum dipakai.");
     }

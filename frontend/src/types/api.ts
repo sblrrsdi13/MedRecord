@@ -6,6 +6,16 @@ export type ApiResponse<T> = {
   data: T;
 };
 
+export type PaginatedResponse<T> = {
+  items: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
 export type UserSession = {
   id: string;
   name: string;

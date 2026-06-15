@@ -17,6 +17,7 @@ import { createPatient, updatePatient } from "@/services/patient-service";
 import { getUsers, type UserRow } from "@/services/user-service";
 import { useAuthStore } from "@/store/auth-store";
 import type { Patient, RoleName } from "@/types/api";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 const STAFF_ROLES: RoleName[] = ["ADMIN", "RECEPTIONIST", "NURSE", "DOCTOR", "PHARMACY", "CASHIER"];
 
@@ -82,7 +83,8 @@ export function PatientForm({ initialPatient, onSaved }: { initialPatient?: Pati
       } else {
         await createPatient(payload);
       }
-      setMessage(initialPatient ? "Data pasien berhasil diperbarui." : "Pasien berhasil disimpan. Refresh tabel untuk melihat data terbaru.");
+      emitResourceChanged("patients");
+      setMessage(initialPatient ? "Data pasien berhasil diperbarui." : "Pasien berhasil disimpan.");
       onSaved?.();
     } catch (err) {
       if (axios.isAxiosError(err)) {

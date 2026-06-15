@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { AlertTriangle, BarChart3, CalendarDays, CheckCircle2, Clock3, Database, Eye, FileText, Gauge, Globe2, MoreVertical, PackageCheck, RefreshCw, Settings, ShieldCheck, TrendingUp, UserCog, UsersRound } from "lucide-react";
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { getDashboardSummary, type DashboardSummary } from "@/services/dashboard-service";
 import { getAdminMonitoring, type AdminMonitoring } from "@/services/site-settings-service";
 import { useAuthStore } from "@/store/auth-store";
+import { useResourceSocket } from "@/hooks/use-resource-socket";
+import { RESOURCE_CHANGED_EVENT } from "@/utils/resource-events";
 
 function formatCurrency(value: string | number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(value ?? 0));
@@ -29,11 +31,12 @@ export function DashboardView() {
 }
 
 function OperationalDashboard() {
+  useResourceSocket();
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async function loadDashboard() {
     setLoading(true);
     setError(null);
     try {
@@ -43,11 +46,23 @@ function OperationalDashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
+
+  useEffect(() => {
+    function handleResourceChanged(event: Event) {
+      const resource = (event as CustomEvent<{ resource?: string }>).detail?.resource;
+      if (resource && ["patients", "visits", "queues", "prescriptions", "payments", "medicines", "medical-records", "vital-signs"].includes(resource)) {
+        void load();
+      }
+    }
+
+    window.addEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+    return () => window.removeEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+  }, [load]);
 
   const todayLabel = useMemo(() => new Intl.DateTimeFormat("id-ID", { dateStyle: "full" }).format(new Date()), []);
 
@@ -181,11 +196,12 @@ function OperationalDashboard() {
 }
 
 function AdminDashboard() {
+  useResourceSocket();
   const [data, setData] = useState<AdminMonitoring | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async function loadAdminMonitoring() {
     setLoading(true);
     setError(null);
     try {
@@ -195,11 +211,23 @@ function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
+
+  useEffect(() => {
+    function handleResourceChanged(event: Event) {
+      const resource = (event as CustomEvent<{ resource?: string }>).detail?.resource;
+      if (resource && ["settings", "users", "patients", "notifications", "announcements", "audit-logs"].includes(resource)) {
+        void load();
+      }
+    }
+
+    window.addEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+    return () => window.removeEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+  }, [load]);
 
   if (loading) return <DashboardSkeleton />;
   if (error || !data) {

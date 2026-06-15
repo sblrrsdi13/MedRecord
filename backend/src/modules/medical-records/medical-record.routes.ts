@@ -5,9 +5,13 @@ import { z } from "zod";
 import { prisma } from "../../config/prisma.js";
 import { authenticate, authorize } from "../../middleware/auth.middleware.js";
 import { validate } from "../../middleware/validate.middleware.js";
+import { writeAuditLog } from "../../middleware/audit.middleware.js";
 import { created, ok } from "../../utils/api-response.js";
 import { AppError } from "../../utils/errors.js";
 import { OPERATIONAL_ROLES } from "../../constants/roles.js";
+import { advanceVisitStatus } from "../../services/visit-workflow.service.js";
+import { hasPaginationQuery, paginationMeta, parsePagination } from "../../utils/pagination.js";
+import { emitResourceEvent } from "../../socket/socket.js";
 
 export const medicalRecordRoutes = Router();
 
@@ -91,6 +95,32 @@ async function getVisitPatientId(tx: Prisma.TransactionClient, visitId: string) 
   return visit.patientId;
 }
 
+async function assertMedicalRecordVisitChangeIsSafe(tx: Prisma.TransactionClient, recordId: string, nextVisitId: string) {
+  const currentRecord = await tx.medicalRecord.findUnique({
+    where: { id: recordId },
+    select: { visitId: true, patientId: true }
+  });
+
+  if (!currentRecord) {
+    throw new AppError(404, "Rekam medis tidak ditemukan.", "MEDICAL_RECORD_NOT_FOUND");
+  }
+
+  if (currentRecord.visitId === nextVisitId) return;
+
+  const nextVisit = await tx.visit.findUnique({
+    where: { id: nextVisitId },
+    select: { patientId: true }
+  });
+
+  if (!nextVisit) {
+    throw new AppError(404, "Kunjungan tidak ditemukan.", "VISIT_NOT_FOUND");
+  }
+
+  if (nextVisit.patientId !== currentRecord.patientId) {
+    throw new AppError(422, "Rekam medis tidak boleh dipindahkan ke kunjungan pasien lain.", "MEDICAL_RECORD_PATIENT_MISMATCH");
+  }
+}
+
 function medicalRecordPayload(body: z.infer<typeof schema>["body"], doctorId: string, patientId: string) {
   return {
     visitId: body.visitId,
@@ -105,17 +135,53 @@ function medicalRecordPayload(body: z.infer<typeof schema>["body"], doctorId: st
 }
 
 medicalRecordRoutes.use(authenticate);
-medicalRecordRoutes.get("/", authorize(OPERATIONAL_ROLES), async (_req, res) => {
-  const records = await prisma.medicalRecord.findMany({
-    include: {
-      patient: true,
-      doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
-      visit: true
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50
-  });
-  return ok(res, records);
+medicalRecordRoutes.get("/", authorize(OPERATIONAL_ROLES), async (req, res) => {
+  if (!hasPaginationQuery(req.query as Record<string, unknown>)) {
+    const records = await prisma.medicalRecord.findMany({
+      include: {
+        patient: true,
+        doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
+        visit: true
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50
+    });
+    return ok(res, records);
+  }
+
+  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 25 });
+  const where = paging.search
+    ? {
+        OR: [
+          { diagnosis: { contains: paging.search, mode: "insensitive" as const } },
+          { treatment: { contains: paging.search, mode: "insensitive" as const } },
+          { anamnesis: { contains: paging.search, mode: "insensitive" as const } },
+          { notes: { contains: paging.search, mode: "insensitive" as const } },
+          { patient: { name: { contains: paging.search, mode: "insensitive" as const } } },
+          { patient: { patientCode: { contains: paging.search, mode: "insensitive" as const } } },
+          { patient: { medicalRecordNo: { contains: paging.search, mode: "insensitive" as const } } },
+          { patient: { nik: { contains: paging.search, mode: "insensitive" as const } } },
+          { doctor: { user: { name: { contains: paging.search, mode: "insensitive" as const } } } }
+        ]
+      }
+    : {};
+
+  const [records, total] = await Promise.all([
+    prisma.medicalRecord.findMany({
+      where,
+      include: {
+        patient: true,
+        doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
+        visit: true
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (paging.page - 1) * paging.limit,
+      take: paging.limit
+    }),
+    prisma.medicalRecord.count({ where })
+  ]);
+
+  return ok(res, { items: records, meta: paginationMeta(paging, total) });
 });
 
 medicalRecordRoutes.post("/", authorize(OPERATIONAL_ROLES), validate(schema), async (req, res) => {
@@ -124,20 +190,32 @@ medicalRecordRoutes.post("/", authorize(OPERATIONAL_ROLES), validate(schema), as
     const patientId = await getVisitPatientId(tx, req.body.visitId);
     await ensureMedicalRecordNo(tx, patientId);
     const createdRecord = await tx.medicalRecord.create({ data: medicalRecordPayload(req.body, doctorId, patientId) });
-    await tx.visit.update({ where: { id: req.body.visitId }, data: { status: "examined" } });
+    await advanceVisitStatus(tx, req.body.visitId, "examined");
     return createdRecord;
   });
+  await writeAuditLog(req, "create", "medical_records", record.id, { visitId: record.visitId, patientId: record.patientId });
+  emitResourceEvent("medical-records", "create", { id: record.id, visitId: record.visitId, patientId: record.patientId });
+  emitResourceEvent("visits", "update", { id: record.visitId });
   return created(res, record, "Rekam medis berhasil dibuat");
 });
 medicalRecordRoutes.put("/:id", authorize(OPERATIONAL_ROLES), validate(schema), async (req, res) => {
   const doctorId = await resolveDoctorId(req.user!, req.body.doctorId);
   const record = await prisma.$transaction(async (tx) => {
+    await assertMedicalRecordVisitChangeIsSafe(tx, req.params.id, req.body.visitId);
     const patientId = await getVisitPatientId(tx, req.body.visitId);
     await ensureMedicalRecordNo(tx, patientId);
     const updatedRecord = await tx.medicalRecord.update({ where: { id: req.params.id }, data: medicalRecordPayload(req.body, doctorId, patientId) });
-    await tx.visit.update({ where: { id: req.body.visitId }, data: { status: "examined" } });
+    await advanceVisitStatus(tx, req.body.visitId, "examined");
     return updatedRecord;
   });
+  await writeAuditLog(req, "update", "medical_records", record.id, { visitId: record.visitId, patientId: record.patientId });
+  emitResourceEvent("medical-records", "update", { id: record.id, visitId: record.visitId, patientId: record.patientId });
+  emitResourceEvent("visits", "update", { id: record.visitId });
   return ok(res, record, "Rekam medis berhasil diperbarui");
 });
-medicalRecordRoutes.delete("/:id", authorize(OPERATIONAL_ROLES), async (req, res) => ok(res, await prisma.medicalRecord.delete({ where: { id: req.params.id } }), "Rekam medis berhasil dihapus"));
+medicalRecordRoutes.delete("/:id", authorize(OPERATIONAL_ROLES), async (req, res) => {
+  const record = await prisma.medicalRecord.delete({ where: { id: req.params.id } });
+  await writeAuditLog(req, "delete", "medical_records", record.id, { visitId: record.visitId, patientId: record.patientId });
+  emitResourceEvent("medical-records", "delete", { id: record.id, visitId: record.visitId, patientId: record.patientId });
+  return ok(res, record, "Rekam medis berhasil dihapus");
+});

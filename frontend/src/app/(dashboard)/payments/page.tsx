@@ -5,6 +5,8 @@ import { Banknote, CreditCard, Printer, ReceiptText, RefreshCw, Search } from "l
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPayments, getReadyPayments, processReadyPayment, type PaymentRow, type ReadyPaymentVisit } from "@/services/payment-service";
+import { useResourceSocket } from "@/hooks/use-resource-socket";
+import { RESOURCE_CHANGED_EVENT } from "@/utils/resource-events";
 
 type PaymentMethod = "CASH" | "TRANSFER" | "BPJS";
 
@@ -87,6 +89,7 @@ function printInvoice(payment: PaymentRow) {
 }
 
 export default function PaymentsPage() {
+  useResourceSocket();
   const [readyVisits, setReadyVisits] = useState<ReadyPaymentVisit[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -115,6 +118,18 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     load();
+  }, []);
+
+  useEffect(() => {
+    function handleResourceChanged(event: Event) {
+      const resource = (event as CustomEvent<{ resource?: string }>).detail?.resource;
+      if (resource === "payments" || resource === "visits" || resource === "prescriptions" || resource === "medical-records") {
+        void load();
+      }
+    }
+
+    window.addEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+    return () => window.removeEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
   }, []);
 
   const selected = readyVisits.find((visit) => visit.id === selectedId) ?? null;

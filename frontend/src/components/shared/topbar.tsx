@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell, Menu } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import { NotificationCard, notificationSenderBadge } from "@/components/ui/notification-card";
@@ -74,7 +74,7 @@ export function Topbar() {
     };
   }, [userId]);
 
-  const unreadCount = notifications.filter((item) => !item.readAt).length;
+  const unreadCount = useMemo(() => notifications.filter((item) => !item.readAt).length, [notifications]);
 
   async function handleRead(notification: NotificationItem) {
     if (!notification.readAt) {
@@ -96,7 +96,7 @@ export function Topbar() {
   return (
     <>
       <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[#c7c1b5]/70 bg-[#faf8ef]/78 px-4 shadow-[0_12px_28px_rgba(46,57,57,.08)] backdrop-blur-xl md:px-6">
+      <header className="sticky top-0 z-30 flex h-16 min-w-0 items-center justify-between border-b border-[#c7c1b5]/70 bg-[#faf8ef]/78 px-3 shadow-[0_12px_28px_rgba(46,57,57,.08)] backdrop-blur-xl sm:px-4 md:px-6">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <Button variant="outline" size="icon" aria-label="Buka menu" className="shrink-0 md:hidden" onClick={() => setMobileOpen(true)}>
             <Menu className="h-4 w-4" />
@@ -106,7 +106,7 @@ export function Topbar() {
             <p className="truncate text-xs text-[#6a746f]">{t("system.subtitle")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <div className="relative">
             <Button variant="ghost" size="icon" aria-label={t("notification.title")} className="relative rounded-full transition hover:bg-[#e6efe5]" onClick={() => setNotificationOpen((open) => !open)}>
               <Bell className="h-4 w-4" />
@@ -115,7 +115,7 @@ export function Topbar() {
             {notificationOpen && (
               <>
                 <button className="fixed inset-0 z-40 cursor-default" aria-label="Tutup notifikasi" onClick={() => setNotificationOpen(false)} />
-                <div className="soft-panel absolute right-0 z-50 mt-3 w-80 overflow-hidden rounded-2xl animate-in">
+                <div className="soft-panel fixed left-3 right-3 top-16 z-50 max-h-[calc(100dvh-5rem)] overflow-hidden rounded-2xl animate-in sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-3 sm:w-80">
                   <div className="border-b border-[#c7c1b5]/70 bg-[#e6efe5]/70 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
@@ -129,7 +129,7 @@ export function Topbar() {
                       )}
                     </div>
                   </div>
-                  <div className="max-h-96 overflow-y-auto p-2">
+                  <div className="max-h-[calc(100dvh-11rem)] overflow-y-auto p-2 sm:max-h-96">
                     {notifications.length === 0 ? (
                       <p className="p-4 text-sm text-[#6a746f]">{t("notification.empty")}</p>
                     ) : (
@@ -152,7 +152,7 @@ export function Topbar() {
               </>
             )}
           </div>
-          <div className="h-6 w-px bg-[#c7c1b5]" />
+          <div className="hidden h-6 w-px bg-[#c7c1b5] sm:block" />
           <LanguageToggle />
         </div>
       </header>

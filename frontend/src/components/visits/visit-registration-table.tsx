@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
 import { CalendarClock, ClipboardList, CreditCard, FileDown, IdCard, MoreHorizontal, Printer, RefreshCw, Search, Trash2, UserRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { deleteResource } from "@/services/resource-service";
 import { getVisits, type VisitRegistrationRow } from "@/services/visit-service";
 import { useAuthStore } from "@/store/auth-store";
+import type { PaginatedResponse } from "@/types/api";
+import { useResourceSocket } from "@/hooks/use-resource-socket";
+import { RESOURCE_CHANGED_EVENT } from "@/utils/resource-events";
+
+const PAGE_SIZE = 20;
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("id-ID", {
@@ -123,10 +128,14 @@ function printVisit(row: VisitRegistrationRow) {
 }
 
 export function VisitRegistrationTable({ refreshKey = 0, actionSlot }: { refreshKey?: number; actionSlot?: ReactNode }) {
+  useResourceSocket();
   const role = useAuthStore((state) => state.user?.role);
   const canDelete = role === "RECEPTIONIST" || role === "NURSE" || role === "DOCTOR" || role === "PHARMACY" || role === "CASHIER";
   const [rows, setRows] = useState<VisitRegistrationRow[]>([]);
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginatedResponse<VisitRegistrationRow>["meta"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -134,7 +143,9 @@ export function VisitRegistrationTable({ refreshKey = 0, actionSlot }: { refresh
     setLoading(true);
     setError(null);
     try {
-      setRows(await getVisits());
+      const payload = await getVisits({ page, limit: PAGE_SIZE, search: deferredQuery.trim() || undefined });
+      setRows(payload.items);
+      setMeta(payload.meta);
     } catch {
       setError("Data pendaftaran belum dapat dimuat.");
     } finally {
@@ -144,10 +155,25 @@ export function VisitRegistrationTable({ refreshKey = 0, actionSlot }: { refresh
 
   useEffect(() => {
     load();
-  }, [refreshKey]);
+  }, [deferredQuery, page, refreshKey]);
+
+  useEffect(() => {
+    function handleResourceChanged(event: Event) {
+      const resource = (event as CustomEvent<{ resource?: string }>).detail?.resource;
+      if (resource === "visits" || resource === "payments" || resource === "queues") void load();
+    }
+
+    window.addEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+    return () => window.removeEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+  }, [deferredQuery, page, refreshKey]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [deferredQuery, refreshKey]);
 
   const filteredRows = useMemo(() => {
-    const keyword = query.trim().toLowerCase();
+    if (meta) return rows;
+    const keyword = deferredQuery.trim().toLowerCase();
     if (!keyword) return rows;
     return rows.filter((row) => {
       const patient = row.patient;
@@ -155,7 +181,15 @@ export function VisitRegistrationTable({ refreshKey = 0, actionSlot }: { refresh
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(keyword));
     });
-  }, [query, rows]);
+  }, [deferredQuery, meta, rows]);
+
+  const totalPages = meta?.totalPages ?? Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedRows = useMemo(() => {
+    if (meta) return filteredRows;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredRows.slice(start, start + PAGE_SIZE);
+  }, [currentPage, filteredRows, meta]);
 
   async function handleDelete(id: string) {
     if (!window.confirm("Hapus data pendaftaran ini?")) return;
@@ -227,11 +261,11 @@ export function VisitRegistrationTable({ refreshKey = 0, actionSlot }: { refresh
             ) : filteredRows.length === 0 ? (
               <TableRow><TableCell colSpan={8}>Belum ada data pendaftaran.</TableCell></TableRow>
             ) : (
-              filteredRows.map((row, index) => (
+              paginatedRows.map((row, index) => (
                 <TableRow key={row.id}>
                   <TableCell className="text-center">
                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#faf8ef] text-xs font-bold text-[#5f7974]">
-                      {index + 1}
+                      {(currentPage - 1) * PAGE_SIZE + index + 1}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -318,6 +352,24 @@ export function VisitRegistrationTable({ refreshKey = 0, actionSlot }: { refresh
           </TableBody>
         </Table>
       </div>
+      {(meta ? meta.total > PAGE_SIZE : filteredRows.length > PAGE_SIZE) && (
+        <div className="flex flex-col gap-3 border-t border-[#c7c1b5] bg-[#faf8ef]/60 p-4 text-sm text-[#4a5657] sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            Menampilkan {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, meta?.total ?? filteredRows.length)} dari {meta?.total ?? filteredRows.length} pendaftaran
+          </span>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
+              Sebelumnya
+            </Button>
+            <span className="rounded-xl border border-[#c7c1b5] bg-white px-3 py-2 text-xs font-semibold">
+              {currentPage} / {totalPages}
+            </span>
+            <Button type="button" variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))}>
+              Berikutnya
+            </Button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

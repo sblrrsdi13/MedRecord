@@ -9,6 +9,7 @@ import { createDoctor } from "@/services/doctor-service";
 import { getPolyclinics, type Polyclinic } from "@/services/polyclinic-service";
 import { getUsers, type UserRow } from "@/services/user-service";
 import { sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -52,6 +53,7 @@ export function DoctorForm() {
         specialization: String(formData.get("specialization") || "") || undefined,
         polyclinicId: String(formData.get("polyclinicId") || "") || undefined
       });
+      emitResourceChanged("doctors");
       setMessage("Profil dokter berhasil dibuat.");
     } catch {
       setError("Gagal membuat dokter. Pastikan user role DOCTOR belum punya profil dokter.");

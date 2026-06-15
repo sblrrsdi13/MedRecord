@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { login } from "@/services/auth-service";
 import { useAuthStore } from "@/store/auth-store";
 import { loginSchema, type LoginInput } from "@/validations/auth.schema";
@@ -39,7 +40,7 @@ export function LoginForm() {
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="password">Password</label>
-        <Input id="password" type="password" placeholder="Minimal 8 karakter" {...form.register("password")} />
+        <PasswordInput id="password" placeholder="Minimal 8 karakter" {...form.register("password")} />
         {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
       </div>
       {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

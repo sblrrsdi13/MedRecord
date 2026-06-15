@@ -7,6 +7,7 @@ import { getPolyclinics, type Polyclinic } from "@/services/polyclinic-service";
 import { getPatients } from "@/services/patient-service";
 import type { Patient } from "@/types/api";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 export function QueueCreateForm({ onCreated }: { onCreated?: () => void }) {
   const [polyclinics, setPolyclinics] = useState<Polyclinic[]>([]);
@@ -28,6 +29,7 @@ export function QueueCreateForm({ onCreated }: { onCreated?: () => void }) {
         polyclinicId: String(formData.get("polyclinicId")),
         patientId: patientId || undefined
       });
+      emitResourceChanged("queues");
       setMessage(`Antrian ${queue.queueNumber} berhasil dibuat.`);
       onCreated?.();
     } catch {

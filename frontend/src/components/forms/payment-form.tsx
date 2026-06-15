@@ -12,6 +12,7 @@ import {
 } from "./shared-form";
 import { createPayment } from "@/services/payment-service";
 import { getResource } from "@/services/resource-service";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 type VisitRow = { id: string; visitNo: string; patient?: { name: string } };
 
@@ -66,6 +67,8 @@ export function PaymentForm() {
         paidAmount,
         status: paidAmount >= total ? "paid" : paidAmount > 0 ? "partial" : "unpaid"
       });
+      emitResourceChanged("payments");
+      emitResourceChanged("visits");
       setMessage("Pembayaran berhasil dibuat.");
     } catch {
       setError("Gagal membuat pembayaran. Kunjungan mungkin sudah memiliki invoice.");

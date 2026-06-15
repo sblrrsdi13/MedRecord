@@ -9,6 +9,7 @@ import { createDoctorSchedule } from "@/services/doctor-service";
 import { getPolyclinics, type Polyclinic } from "@/services/polyclinic-service";
 import { getResource } from "@/services/resource-service";
 import { sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 type DoctorRow = { id: string; user?: { name: string } };
 
@@ -57,6 +58,7 @@ export function DoctorScheduleForm() {
         quota: Number(formData.get("quota")),
         isActive: true
       });
+      emitResourceChanged("doctor-schedules");
       setMessage("Jadwal dokter berhasil dibuat.");
     } catch {
       setError("Gagal membuat jadwal dokter.");

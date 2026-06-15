@@ -7,6 +7,7 @@ import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClass
 import { createPrescription } from "@/services/prescription-service";
 import { getResource } from "@/services/resource-service";
 import type { Medicine } from "@/services/medicine-service";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 type MedicalRecordRow = { id: string; patient?: { name: string }; diagnosis: string };
 type PrescriptionDraftItem = {
@@ -61,6 +62,8 @@ export function PrescriptionForm() {
         medicalRecordId: String(formData.get("medicalRecordId")),
         items: validItems
       });
+      emitResourceChanged("prescriptions");
+      emitResourceChanged("visits");
       setMessage("Resep berhasil dibuat.");
       setItems([newItem()]);
     } catch {

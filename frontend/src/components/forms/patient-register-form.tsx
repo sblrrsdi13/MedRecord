@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { DateChooser } from "@/components/ui/date-chooser";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SelectChooser } from "@/components/ui/select-chooser";
 import { registerPatient } from "@/services/auth-service";
 import { patientRegisterSchema, type PatientRegisterInput } from "@/validations/auth.schema";
@@ -129,10 +130,10 @@ export function PatientRegisterForm() {
 
       <Section icon={LockKeyhole} title="Keamanan Akun">
         <Field label="Password" error={form.formState.errors.password?.message}>
-          <Input id="password" type="password" placeholder="Minimal 8 karakter" {...form.register("password")} />
+          <PasswordInput id="password" placeholder="Minimal 8 karakter" {...form.register("password")} />
         </Field>
         <Field label="Konfirmasi password" error={form.formState.errors.confirmPassword?.message}>
-          <Input id="confirmPassword" type="password" placeholder="Ulangi password" {...form.register("confirmPassword")} />
+          <PasswordInput id="confirmPassword" placeholder="Ulangi password" {...form.register("confirmPassword")} />
         </Field>
       </Section>
 

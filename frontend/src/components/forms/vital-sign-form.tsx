@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
 import { createVitalSign } from "@/services/clinical-service";
 import { getResource } from "@/services/resource-service";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 type VisitRow = { id: string; visitNo: string; patientId: string; patient?: { name: string } };
 
@@ -35,6 +36,7 @@ export function VitalSignForm() {
         height: Number(formData.get("height") || undefined),
         notes: String(formData.get("notes") || "") || undefined
       });
+      emitResourceChanged("vital-signs");
       setMessage("Vital sign berhasil dicatat.");
     } catch {
       setError("Gagal mencatat vital sign. Kunjungan mungkin sudah memiliki vital sign.");

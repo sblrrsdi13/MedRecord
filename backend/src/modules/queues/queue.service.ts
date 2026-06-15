@@ -1,7 +1,7 @@
 import { QueueStatus } from "@prisma/client";
 import { prisma } from "../../config/prisma.js";
 import { AppError } from "../../utils/errors.js";
-import { emitQueueEvent } from "../../socket/socket.js";
+import { emitQueueEvent, emitResourceEvent } from "../../socket/socket.js";
 
 function startOfToday() {
   const date = new Date();
@@ -63,6 +63,7 @@ export async function createQueue(input: { polyclinicId: string; patientId?: str
 
   emitQueueEvent("queue:created", { polyclinicId: queue.polyclinicId, queue });
   emitQueueEvent("queue:updated", { polyclinicId: queue.polyclinicId });
+  emitResourceEvent("queues", "create", { id: queue.id, polyclinicId: queue.polyclinicId });
   return queue;
 }
 
@@ -81,5 +82,6 @@ export async function changeQueueStatus(id: string, status: QueueStatus) {
 
   const event = status === QueueStatus.called ? "queue:called" : "queue:updated";
   emitQueueEvent(event, { polyclinicId: queue.polyclinicId, queue });
+  emitResourceEvent("queues", "update", { id: queue.id, polyclinicId: queue.polyclinicId });
   return queue;
 }

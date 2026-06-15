@@ -5,6 +5,7 @@ import { BadgeDollarSign, Building2, ListOrdered, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { createPolyclinic } from "@/services/polyclinic-service";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName } from "@/components/forms/shared-form";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 export function PolyclinicForm() {
   const [message, setMessage] = useState<string | null>(null);
@@ -22,7 +23,8 @@ export function PolyclinicForm() {
         description: String(formData.get("description") || "") || undefined,
         isActive: true
       });
-      setMessage("Poli berhasil disimpan. Refresh tabel untuk melihat data terbaru.");
+      emitResourceChanged("polyclinics");
+      setMessage("Poli berhasil disimpan.");
     } catch {
       setError("Gagal menyimpan poli. Pastikan kode dan prefix belum dipakai.");
     }

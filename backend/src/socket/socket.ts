@@ -40,3 +40,8 @@ export function emitCmsEvent(payload: { settings: unknown }) {
   if (!io) return;
   io.emit("cms:updated", payload);
 }
+
+export function emitResourceEvent(resource: string, action: "create" | "update" | "delete" | "refresh", payload: Record<string, unknown> = {}) {
+  if (!io) return;
+  io.emit("resource:changed", { resource, action, ...payload });
+}

@@ -3,6 +3,7 @@ import { RoleName } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../config/prisma.js";
 import { authenticate, authorize } from "../../middleware/auth.middleware.js";
+import { writeAuditLog } from "../../middleware/audit.middleware.js";
 import { ok } from "../../utils/api-response.js";
 
 export const patientPortalRoutes = Router();
@@ -77,7 +78,16 @@ patientPortalRoutes.get("/me", async (req, res) => {
       medicalRecords: [],
       prescriptions: [],
       payments: [],
-      queues: []
+      queues: [],
+      summary: {
+        visits: 0,
+        medicalRecords: 0,
+        prescriptions: 0,
+        paidPayments: 0,
+        pendingPayments: 0,
+        queues: 0,
+        nextVisit: null
+      }
     }, "Akun pasien belum terhubung dengan data pasien");
   }
 
@@ -156,8 +166,26 @@ patientPortalRoutes.get("/me", async (req, res) => {
     }];
   });
   const queues = patient.visits.flatMap((visit) => visit.queue ? [visit.queue] : []);
+  const paidPayments = payments.filter((payment) => payment.status === "paid" && !payment.isDraft);
+  const pendingPayments = payments.filter((payment) => payment.status !== "paid");
 
-  return ok(res, { patient, visits: patient.visits, medicalRecords, prescriptions, payments, queues });
+  return ok(res, {
+    patient,
+    visits: patient.visits,
+    medicalRecords,
+    prescriptions,
+    payments,
+    queues,
+    summary: {
+      visits: patient.visits.length,
+      medicalRecords: medicalRecords.length,
+      prescriptions: prescriptions.length,
+      paidPayments: paidPayments.length,
+      pendingPayments: pendingPayments.length,
+      queues: queues.length,
+      nextVisit: patient.visits[0] ?? null
+    }
+  });
 });
 
 patientPortalRoutes.patch("/payments/:id/pay", async (req, res) => {
@@ -178,6 +206,7 @@ patientPortalRoutes.patch("/payments/:id/pay", async (req, res) => {
     data: { paidAmount: payment.total, status: "paid" }
   });
 
+  await writeAuditLog(req, "patient_pay", "payments", updated.id, { visitId: updated.visitId, invoiceNo: updated.invoiceNo });
   return ok(res, updated, "Invoice berhasil dibayar");
 });
 
@@ -230,6 +259,7 @@ patientPortalRoutes.patch("/profile", async (req, res) => {
     return { user, patient: updatedPatient };
   });
 
+  await writeAuditLog(req, "update_own_profile", "patients", result.patient.id);
   return ok(res, {
     user: {
       id: result.user.id,

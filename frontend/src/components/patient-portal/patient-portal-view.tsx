@@ -30,6 +30,7 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DateChooser } from "@/components/ui/date-chooser";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SelectChooser } from "@/components/ui/select-chooser";
 import { AnnouncementCard } from "@/components/ui/announcement-card";
 import { NotificationCard, notificationSenderBadge } from "@/components/ui/notification-card";
@@ -168,7 +169,7 @@ export function PatientPortalView() {
     };
   }, [account?.id]);
 
-  const unreadCount = notifications.filter((item) => !item.readAt).length;
+  const unreadCount = useMemo(() => notifications.filter((item) => !item.readAt).length, [notifications]);
 
   async function handleReadNotification(notification: NotificationItem) {
     if (!notification.readAt) {
@@ -286,7 +287,8 @@ export function PatientPortalView() {
   const activeTab = tabs.find((tab) => tab.key === active);
   const ActiveIcon = activeTab?.icon ?? UserRound;
   const genderLabel = data.patient.gender === "MALE" ? t("patient.gender_male", "Laki-laki") : t("patient.gender_female", "Perempuan");
-  const nextVisit = data.visits[0];
+  const portalSummary = getPortalSummary(data);
+  const nextVisit = data.summary?.nextVisit ?? data.visits[0];
   const activeTitle = active === "profile" ? t("patient.profile_detail", "Detail Profil") : activeTab ? t(`patient.tabs.${activeTab.key}`, activeTab.label) : t("patient.profile_detail", "Detail Profil");
 
   return (
@@ -468,9 +470,9 @@ export function PatientPortalView() {
                     <p className="mt-1 text-sm text-[#4a5657]">{t("patient.medical_record_no", "No. RM")} {data.patient.medicalRecordNo}</p>
                   )}
                   <div className="mt-6 flex flex-wrap justify-center gap-3 md:justify-start">
-                    <Metric label={t("patient.metrics.visits", "Kunjungan")} value={String(data.visits.length)} />
-                    <Metric label={t("patient.metrics.records", "Rekam Medis")} value={String(data.medicalRecords.length)} />
-                    <Metric label={t("patient.metrics.prescriptions", "Resep")} value={String(data.prescriptions.length)} />
+                    <Metric label={t("patient.metrics.visits", "Kunjungan")} value={String(portalSummary.visits)} />
+                    <Metric label={t("patient.metrics.records", "Rekam Medis")} value={String(portalSummary.medicalRecords)} />
+                    <Metric label={t("patient.metrics.prescriptions", "Resep")} value={String(portalSummary.prescriptions)} />
                   </div>
                 </div>
               </div>
@@ -605,6 +607,7 @@ function MenuButton({ icon: Icon, label, onClick }: { icon: LucideIcon; label: s
 
 function HomeContent({ announcements, data }: { announcements: AnnouncementItem[]; data: PatientPortalData }) {
   const { t } = useLanguage();
+  const portalSummary = getPortalSummary(data);
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
@@ -632,15 +635,26 @@ function HomeContent({ announcements, data }: { announcements: AnnouncementItem[
         <div className="rounded-2xl border border-[#c7c1b5] bg-white p-5">
           <p className="text-sm font-semibold text-[#2a3234]">{t("patient.your_summary", "Ringkasan Anda")}</p>
           <div className="mt-4 grid gap-3">
-            <Metric label={t("patient.metrics.visits", "Kunjungan")} value={String(data.visits.length)} />
-            <Metric label={t("patient.metrics.records", "Rekam Medis")} value={String(data.medicalRecords.length)} />
-            <Metric label={t("patient.metrics.prescriptions", "Resep")} value={String(data.prescriptions.length)} />
-            <Metric label="Transaksi" value={String(data.payments.filter((payment) => payment.status === "paid" && !payment.isDraft).length)} />
+            <Metric label={t("patient.metrics.visits", "Kunjungan")} value={String(portalSummary.visits)} />
+            <Metric label={t("patient.metrics.records", "Rekam Medis")} value={String(portalSummary.medicalRecords)} />
+            <Metric label={t("patient.metrics.prescriptions", "Resep")} value={String(portalSummary.prescriptions)} />
+            <Metric label="Transaksi" value={String(portalSummary.paidPayments)} />
           </div>
         </div>
       </aside>
     </div>
   );
+}
+
+function getPortalSummary(data: PatientPortalData) {
+  return {
+    visits: data.summary?.visits ?? data.visits.length,
+    medicalRecords: data.summary?.medicalRecords ?? data.medicalRecords.length,
+    prescriptions: data.summary?.prescriptions ?? data.prescriptions.length,
+    paidPayments: data.summary?.paidPayments ?? data.payments.filter((payment) => payment.status === "paid" && !payment.isDraft).length,
+    pendingPayments: data.summary?.pendingPayments ?? data.payments.filter((payment) => payment.status !== "paid").length,
+    queues: data.summary?.queues ?? data.queues.length
+  };
 }
 
 function PatientWelcomeCard({ gender }: { gender?: "MALE" | "FEMALE" }) {
@@ -1154,9 +1168,9 @@ function SettingsModal({
               <h3 className="font-semibold">{t("patient.change_password", "Ganti Password")}</h3>
             </div>
             <div className="space-y-3">
-              <Input name="currentPassword" type="password" placeholder={t("patient.current_password", "Password lama")} required />
-              <Input name="newPassword" type="password" placeholder={t("patient.new_password", "Password baru")} required />
-              <Input name="confirmPassword" type="password" placeholder={t("patient.confirm_new_password", "Konfirmasi password baru")} required />
+              <PasswordInput name="currentPassword" placeholder={t("patient.current_password", "Password lama")} required />
+              <PasswordInput name="newPassword" placeholder={t("patient.new_password", "Password baru")} required />
+              <PasswordInput name="confirmPassword" placeholder={t("patient.confirm_new_password", "Konfirmasi password baru")} required />
               {passwordMessage && <p className="text-sm text-[#5f7974]">{passwordMessage}</p>}
               <Button type="submit" variant="outline" className="w-full">{t("patient.change_password", "Ganti Password")}</Button>
             </div>

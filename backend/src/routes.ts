@@ -42,8 +42,7 @@ apiRoutes.use("/vital-signs", vitalSignRoutes);
 apiRoutes.use("/medical-records", medicalRecordRoutes);
 apiRoutes.use("/prescriptions", prescriptionRoutes);
 apiRoutes.use("/medicines", medicineRoutes);
-  apiRoutes.use("/payments", paymentRoutes);
-
+apiRoutes.use("/payments", paymentRoutes);
 apiRoutes.use("/reports", reportRoutes);
 apiRoutes.use("/audit-logs", auditLogRoutes);
 apiRoutes.use("/settings", settingsRoutes);

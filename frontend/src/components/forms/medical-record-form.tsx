@@ -8,6 +8,7 @@ import { createMedicalRecord } from "@/services/clinical-service";
 import { getResource } from "@/services/resource-service";
 import { useAuthStore } from "@/store/auth-store";
 import type { Patient, RoleName } from "@/types/api";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 type VisitRow = { id: string; visitNo: string; patientId: string; visitDate?: string; complaint?: string; patient?: Patient };
 type DoctorRow = { id: string; user?: { name: string } };
@@ -51,6 +52,8 @@ export function MedicalRecordForm() {
         treatmentFee: Number(formData.get("treatmentFee") || 0),
         notes: String(formData.get("notes") || "") || undefined
       });
+      emitResourceChanged("medical-records");
+      emitResourceChanged("visits");
       setMessage("Rekam medis berhasil disimpan.");
     } catch {
       setError("Gagal menyimpan rekam medis. Pastikan data lengkap dan role Anda memiliki akses operasional.");

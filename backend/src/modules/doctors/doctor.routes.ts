@@ -5,6 +5,7 @@ import { ADMIN_ROLES } from "../../constants/roles.js";
 import { authenticate, authorize } from "../../middleware/auth.middleware.js";
 import { validate } from "../../middleware/validate.middleware.js";
 import { created, ok } from "../../utils/api-response.js";
+import { emitResourceEvent } from "../../socket/socket.js";
 
 export const doctorRoutes = Router();
 
@@ -27,10 +28,16 @@ doctorRoutes.get("/", async (_req, res) => {
 });
 doctorRoutes.post("/", authorize(ADMIN_ROLES), validate(createSchema), async (req, res) => {
   const doctor = await prisma.doctor.create({ data: req.body });
+  emitResourceEvent("doctors", "create", { id: doctor.id });
   return created(res, doctor, "Dokter berhasil dibuat");
 });
 doctorRoutes.put("/:id", authorize(ADMIN_ROLES), validate(createSchema), async (req, res) => {
   const doctor = await prisma.doctor.update({ where: { id: req.params.id }, data: req.body });
+  emitResourceEvent("doctors", "update", { id: doctor.id });
   return ok(res, doctor, "Dokter berhasil diperbarui");
 });
-doctorRoutes.delete("/:id", authorize(ADMIN_ROLES), async (req, res) => ok(res, await prisma.doctor.delete({ where: { id: req.params.id } }), "Dokter berhasil dihapus"));
+doctorRoutes.delete("/:id", authorize(ADMIN_ROLES), async (req, res) => {
+  const doctor = await prisma.doctor.delete({ where: { id: req.params.id } });
+  emitResourceEvent("doctors", "delete", { id: doctor.id });
+  return ok(res, doctor, "Dokter berhasil dihapus");
+});

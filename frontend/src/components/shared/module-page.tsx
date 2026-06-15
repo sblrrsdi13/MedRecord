@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Activity, Database, Layers3, MoreHorizontal, Pencil, RefreshCw, Search, Sparkles, TableProperties, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FormModalShell } from "@/components/shared/form-action-modal";
 import { deleteResource, getResource, updateResource } from "@/services/resource-service";
+import type { PaginatedResponse } from "@/types/api";
+import { normalizeResourceName, RESOURCE_CHANGED_EVENT } from "@/utils/resource-events";
+import { useResourceSocket } from "@/hooks/use-resource-socket";
+
+const PAGE_SIZE = 25;
 
 type Column = {
   key: string;
@@ -48,6 +53,21 @@ function normalizeRows(payload: unknown): Record<string, unknown>[] {
   }
   if (payload && typeof payload === "object") return [payload as Record<string, unknown>];
   return [];
+}
+
+function normalizePaginatedRows(payload: unknown) {
+  const rows = normalizeRows(payload);
+  const maybeMeta = payload && typeof payload === "object" ? (payload as Partial<PaginatedResponse<Record<string, unknown>>>).meta : undefined;
+  const meta = maybeMeta && typeof maybeMeta === "object"
+    ? {
+        page: Number(maybeMeta.page || 1),
+        limit: Number(maybeMeta.limit || PAGE_SIZE),
+        total: Number(maybeMeta.total || rows.length),
+        totalPages: Number(maybeMeta.totalPages || 1)
+      }
+    : null;
+
+  return { rows, meta };
 }
 
 function getModuleMeta(endpoint: string, title: string) {
@@ -127,32 +147,58 @@ function formatCellValue(value: unknown) {
 }
 
 export function ModulePage({ title, description, endpoint, columns, notes = [], deleteEndpoint, editEndpoint, editFields = [], actionSlot, rowActions = [] }: ModulePageProps) {
+  useResourceSocket();
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
+  const [page, setPage] = useState(1);
+  const [serverMeta, setServerMeta] = useState<PaginatedResponse<Record<string, unknown>>["meta"] | null>(null);
   const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(null);
   const meta = getModuleMeta(endpoint, title);
 
-  const load = useMemo(
-    () => async () => {
+  const load = useCallback(
+    async () => {
       setLoading(true);
       setError(null);
       try {
-        const payload = await getResource<unknown>(endpoint);
-        setRows(normalizeRows(payload));
+        const payload = await getResource<unknown>(endpoint, {
+          page,
+          limit: PAGE_SIZE,
+          search: deferredQuery.trim() || undefined
+        });
+        const normalized = normalizePaginatedRows(payload);
+        setRows(normalized.rows);
+        setServerMeta(normalized.meta);
       } catch {
         setError("Data belum dapat dimuat. Pastikan backend aktif dan Anda sudah login.");
       } finally {
         setLoading(false);
       }
     },
-    [endpoint]
+    [deferredQuery, endpoint, page]
   );
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    function handleResourceChanged(event: Event) {
+      const detail = (event as CustomEvent<{ resource?: string }>).detail;
+      if (detail?.resource && normalizeResourceName(detail.resource) === normalizeResourceName(endpoint)) {
+        void load();
+      }
+    }
+
+    window.addEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+    return () => window.removeEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
+  }, [endpoint, load]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [endpoint, deferredQuery]);
 
   async function handleDelete(id: unknown) {
     if (!deleteEndpoint || typeof id !== "string") return;
@@ -184,11 +230,31 @@ export function ModulePage({ title, description, endpoint, columns, notes = [], 
     }
   }
 
+  const searchableRows = useMemo(() => {
+    return rows.map((row) => ({
+      row,
+      searchText: columns
+        .map((column) => formatCellValue(getValue(row, column.key)))
+        .concat(formatCellValue(inferStatus(row)))
+        .join(" ")
+        .toLowerCase()
+    }));
+  }, [columns, rows]);
+
   const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    if (serverMeta) return rows;
+    const q = deferredQuery.trim().toLowerCase();
     if (!q) return rows;
-    return rows.filter((row) => JSON.stringify(row).toLowerCase().includes(q));
-  }, [query, rows]);
+    return searchableRows.filter((item) => item.searchText.includes(q)).map((item) => item.row);
+  }, [deferredQuery, rows, searchableRows, serverMeta]);
+
+  const totalPages = serverMeta?.totalPages ?? Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedRows = useMemo(() => {
+    if (serverMeta) return filteredRows;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredRows.slice(start, start + PAGE_SIZE);
+  }, [currentPage, filteredRows, serverMeta]);
 
   const activeCount = rows.filter((row) => row.isActive === true || row.status === "active" || row.status === "paid" || row.status === "completed").length;
 
@@ -268,11 +334,11 @@ export function ModulePage({ title, description, endpoint, columns, notes = [], 
                 ) : filteredRows.length === 0 ? (
                   <TableRow><TableCell colSpan={columns.length + 2 + (deleteEndpoint || editEndpoint || rowActions.length > 0 ? 1 : 0)}>Belum ada data.</TableCell></TableRow>
                 ) : (
-                  filteredRows.map((row, index) => (
+                  paginatedRows.map((row, index) => (
                     <TableRow key={String(row.id ?? index)}>
                       <TableCell className="text-center">
                         <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#faf8ef] text-xs font-bold text-[#5f7974]">
-                          {index + 1}
+                          {(currentPage - 1) * PAGE_SIZE + index + 1}
                         </span>
                       </TableCell>
                       {columns.map((column, columnIndex) => {
@@ -328,6 +394,24 @@ export function ModulePage({ title, description, endpoint, columns, notes = [], 
               </TableBody>
             </Table>
           </div>
+          {(serverMeta ? serverMeta.total > PAGE_SIZE : filteredRows.length > PAGE_SIZE) && (
+            <div className="mt-4 flex flex-col gap-3 text-sm text-[#4a5657] sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                Menampilkan {(currentPage - 1) * PAGE_SIZE + 1}-{Math.min(currentPage * PAGE_SIZE, serverMeta?.total ?? filteredRows.length)} dari {serverMeta?.total ?? filteredRows.length} data
+              </span>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
+                  Sebelumnya
+                </Button>
+                <span className="rounded-xl border border-[#c7c1b5] bg-[#faf8ef] px-3 py-2 text-xs font-semibold">
+                  {currentPage} / {totalPages}
+                </span>
+                <Button type="button" variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))}>
+                  Berikutnya
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       <FormModalShell

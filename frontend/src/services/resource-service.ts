@@ -1,8 +1,8 @@
 import { api } from "./api";
 import type { ApiResponse } from "@/types/api";
 
-export async function getResource<T>(path: string) {
-  const response = await api.get<ApiResponse<T>>(path);
+export async function getResource<T>(path: string, params?: Record<string, unknown>) {
+  const response = await api.get<ApiResponse<T>>(path, { params });
   return response.data.data;
 }
 

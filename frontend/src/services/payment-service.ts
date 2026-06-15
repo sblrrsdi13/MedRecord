@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { ApiResponse } from "@/types/api";
+import type { ApiResponse, PaginatedResponse } from "@/types/api";
 
 export async function createPayment(payload: {
   invoiceNo?: string;
@@ -55,8 +55,8 @@ export async function getReadyPayments() {
 }
 
 export async function getPayments() {
-  const response = await api.get<ApiResponse<PaymentRow[]>>("/payments");
-  return response.data.data;
+  const response = await api.get<ApiResponse<PaginatedResponse<PaymentRow>>>("/payments", { params: { limit: 25 } });
+  return response.data.data.items;
 }
 
 export async function processReadyPayment(payload: {

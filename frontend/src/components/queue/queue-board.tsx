@@ -110,8 +110,8 @@ export function QueueBoard() {
         </div>
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-      <Card>
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)]">
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>Daftar Antrian Hari Ini</CardTitle>
         </CardHeader>
@@ -122,15 +122,15 @@ export function QueueBoard() {
             <p className="text-sm text-muted-foreground">Belum ada antrian hari ini.</p>
           ) : (
             queues.map((queue) => (
-              <div key={queue.id} className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between">
-                <div>
+              <div key={queue.id} className="flex min-w-0 flex-col gap-3 rounded-lg border p-4 xl:flex-row xl:items-center xl:justify-between">
+                <div className="min-w-0">
                   <div className="flex items-center gap-3">
                     <p className="font-mono text-2xl font-semibold text-primary">{queue.queueNumber}</p>
                     <Badge variant={statusVariant[queue.status]}>{queue.status}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{queue.polyclinic.name} • {queue.patient?.name ?? "Pasien walk-in"}</p>
+                  <p className="truncate text-sm text-muted-foreground">{queue.polyclinic.name} - {queue.patient?.name ?? "Pasien walk-in"}</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex min-w-0 flex-wrap gap-2">
                   <Button size="sm" onClick={() => action(callQueue, queue.id)}><Megaphone className="h-4 w-4" />Panggil</Button>
                   <Button size="sm" variant="outline" onClick={() => action(recallQueue, queue.id)}><RotateCcw className="h-4 w-4" />Ulang</Button>
                   <Button size="sm" variant="outline" onClick={() => action(skipQueue, queue.id)}><SkipForward className="h-4 w-4" />Lewati</Button>
@@ -142,7 +142,7 @@ export function QueueBoard() {
           )}
         </CardContent>
       </Card>
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>TV Display</CardTitle>
         </CardHeader>

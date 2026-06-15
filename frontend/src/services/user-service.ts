@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { ApiResponse, RoleName } from "@/types/api";
+import type { ApiResponse, PaginatedResponse, RoleName } from "@/types/api";
 
 export type UserRow = {
   id: string;
@@ -11,8 +11,10 @@ export type UserRow = {
   createdAt: string;
 };
 
-export async function getUsers() {
-  const response = await api.get<ApiResponse<UserRow[]>>("/users");
+export function getUsers(): Promise<UserRow[]>;
+export function getUsers(params: { page?: number; limit?: number; search?: string }): Promise<UserRow[] | PaginatedResponse<UserRow>>;
+export async function getUsers(params?: { page?: number; limit?: number; search?: string }) {
+  const response = await api.get<ApiResponse<UserRow[] | PaginatedResponse<UserRow>>>("/users", { params });
   return response.data.data;
 }
 

@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { isProduction } from "../../config/env.js";
 import { created, ok } from "../../utils/api-response.js";
+import { emitResourceEvent } from "../../socket/socket.js";
 import * as authService from "./auth.service.js";
 
 const cookieName = "clinic_refresh_token";
@@ -35,11 +36,14 @@ export async function logout(req: Request, res: Response) {
 
 export async function register(req: Request, res: Response) {
   const user = await authService.registerUser(req.body);
+  emitResourceEvent("users", "create", { id: user.id });
   return created(res, user, "User berhasil dibuat");
 }
 
 export async function registerPatient(req: Request, res: Response) {
   const user = await authService.registerPatient(req.body);
+  emitResourceEvent("users", "create", { id: user.id });
+  emitResourceEvent("patients", "create");
   return created(res, user, "Akun dan data pasien berhasil dibuat. Silakan login ke portal pasien.");
 }
 
@@ -50,6 +54,8 @@ export async function me(req: Request, res: Response) {
 
 export async function updateProfile(req: Request, res: Response) {
   const user = await authService.updateProfile(req.user!.id, req.body);
+  emitResourceEvent("users", "update", { id: user.id });
+  emitResourceEvent("patients", "update");
   return ok(res, user, "Profile berhasil diperbarui");
 }
 

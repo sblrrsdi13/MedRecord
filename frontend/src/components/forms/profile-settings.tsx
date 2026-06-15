@@ -6,6 +6,7 @@ import { KeyRound, Save, ShieldCheck, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName } from "@/components/forms/shared-form";
 import { changePassword, getMe, updateProfile } from "@/services/auth-service";
 import { useAuthStore } from "@/store/auth-store";
@@ -150,13 +151,13 @@ export function ProfileSettings() {
             <form action={onPasswordSubmit} className={sharedFormStyles.form}>
               <FormSection icon={KeyRound} title="Keamanan Akun">
                 <FormField label="Password Lama">
-                  <Input name="currentPassword" type="password" placeholder="Password lama" className={sharedInputClassName} required />
+                  <PasswordInput name="currentPassword" placeholder="Password lama" inputClassName={sharedInputClassName} required />
                 </FormField>
                 <FormField label="Password Baru">
-                  <Input name="newPassword" type="password" placeholder="Password baru" className={sharedInputClassName} required />
+                  <PasswordInput name="newPassword" placeholder="Password baru" inputClassName={sharedInputClassName} required />
                 </FormField>
                 <FormField label="Konfirmasi Password Baru">
-                  <Input name="confirmPassword" type="password" placeholder="Konfirmasi password baru" className={sharedInputClassName} required />
+                  <PasswordInput name="confirmPassword" placeholder="Konfirmasi password baru" inputClassName={sharedInputClassName} required />
                 </FormField>
               </FormSection>
               <FormMessage message={passwordMessage} />

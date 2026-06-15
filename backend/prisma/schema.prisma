@@ -71,6 +71,7 @@ model User {
 
   @@index([roleId])
   @@index([isActive])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -248,6 +249,7 @@ model Visit {
 
   @@index([patientId, visitDate])
   @@index([polyclinicId, visitDate])
+  @@index([status, visitDate])
   @@map("visits")
 }
 
@@ -290,6 +292,8 @@ model VitalSign {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@index([patientId, createdAt])
+  @@index([createdAt])
   @@map("vital_signs")
 }
 
@@ -311,6 +315,7 @@ model MedicalRecord {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@index([patientId, createdAt])
+  @@index([createdAt])
   @@map("medical_records")
 }
 
@@ -323,6 +328,7 @@ model Prescription {
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
 
+  @@index([status, createdAt])
   @@map("prescriptions")
 }
 
@@ -384,6 +390,7 @@ model Payment {
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
 
+  @@index([status, createdAt])
   @@map("payments")
 }
 
@@ -412,6 +419,7 @@ model AuditLog {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId, createdAt])
+  @@index([createdAt])
   @@index([resource, resourceId])
   @@map("audit_logs")
 }

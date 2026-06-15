@@ -45,6 +45,19 @@ body {
   background: rgba(134, 161, 151, 0.32);
 }
 
+.password-field::-ms-reveal,
+.password-field::-ms-clear {
+  display: none;
+}
+
+.password-field::-webkit-credentials-auto-fill-button,
+.password-field::-webkit-caps-lock-indicator {
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
 @layer components {
   .theme-surface {
     background:

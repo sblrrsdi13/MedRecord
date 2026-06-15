@@ -1,11 +1,14 @@
 import { Router } from "express";
-import { RoleName } from "@prisma/client";
+import { Prisma, RoleName } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../config/prisma.js";
 import { STAFF_ROLES } from "../../constants/roles.js";
+import { writeAuditLog } from "../../middleware/audit.middleware.js";
 import { authenticate, authorize } from "../../middleware/auth.middleware.js";
 import { validate } from "../../middleware/validate.middleware.js";
 import { ok } from "../../utils/api-response.js";
+import { hasPaginationQuery, paginationMeta, parsePagination } from "../../utils/pagination.js";
+import { emitResourceEvent } from "../../socket/socket.js";
 
 export const userRoutes = Router();
 
@@ -19,12 +22,39 @@ const updateUserSchema = z.object({
 });
 
 userRoutes.use(authenticate);
-userRoutes.get("/", authorize(STAFF_ROLES), async (_req, res) => {
-  const users = await prisma.user.findMany({
-    select: { id: true, name: true, email: true, phone: true, isActive: true, role: { select: { name: true } }, createdAt: true },
-    orderBy: { createdAt: "desc" }
-  });
-  return ok(res, users);
+userRoutes.get("/", authorize(STAFF_ROLES), async (req, res) => {
+  const select = { id: true, name: true, email: true, phone: true, isActive: true, role: { select: { name: true } }, createdAt: true };
+
+  if (!hasPaginationQuery(req.query)) {
+    const users = await prisma.user.findMany({
+      select,
+      orderBy: { createdAt: "desc" }
+    });
+    return ok(res, users);
+  }
+
+  const paging = parsePagination(req.query);
+  const where: Prisma.UserWhereInput | undefined = paging.search
+    ? {
+        OR: [
+          { name: { contains: paging.search, mode: "insensitive" } },
+          { email: { contains: paging.search, mode: "insensitive" } },
+          { phone: { contains: paging.search, mode: "insensitive" } }
+        ]
+      }
+    : undefined;
+  const [total, users] = await Promise.all([
+    prisma.user.count({ where }),
+    prisma.user.findMany({
+      where,
+      select,
+      orderBy: { createdAt: "desc" },
+      skip: (paging.page - 1) * paging.limit,
+      take: paging.limit
+    })
+  ]);
+
+  return ok(res, { items: users, meta: paginationMeta(paging, total) });
 });
 
 userRoutes.put("/:id", authorize([RoleName.ADMIN]), validate(updateUserSchema), async (req, res) => {
@@ -38,6 +68,8 @@ userRoutes.put("/:id", authorize([RoleName.ADMIN]), validate(updateUserSchema), 
     },
     select: { id: true, name: true, email: true, phone: true, isActive: true, role: { select: { name: true } }, createdAt: true }
   });
+  await writeAuditLog(req, "UPDATE_USER", "users", user.id, { email: user.email, isActive: user.isActive });
+  emitResourceEvent("users", "update", { id: user.id });
   return ok(res, user, "User berhasil diperbarui");
 });
 
@@ -47,6 +79,8 @@ userRoutes.delete("/:id", authorize([RoleName.ADMIN]), async (req, res) => {
     data: { isActive: false },
     select: { id: true, name: true, email: true, isActive: true }
   });
+  await writeAuditLog(req, "DEACTIVATE_USER", "users", user.id, { email: user.email });
+  emitResourceEvent("users", "update", { id: user.id });
   return ok(res, user, "User berhasil dinonaktifkan");
 });
 
@@ -61,5 +95,7 @@ userRoutes.delete("/:id/permanent", authorize([RoleName.ADMIN]), async (req, res
     select: { id: true, name: true, email: true }
   });
 
+  await writeAuditLog(req, "DELETE_USER_PERMANENT", "users", user.id, { email: user.email });
+  emitResourceEvent("users", "delete", { id: user.id });
   return ok(res, user, "User berhasil dihapus permanen");
 });

@@ -1,33 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Pencil } from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { Pencil, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteUserPermanent, getUsers, type UserRow } from "@/services/user-service";
 import { deleteResource, updateResource } from "@/services/resource-service";
 import { FormModalShell } from "@/components/shared/form-action-modal";
+import type { PaginatedResponse } from "@/types/api";
+
+const PAGE_SIZE = 25;
 
 export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginatedResponse<UserRow>["meta"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
+  const deferredSearch = useDeferredValue(search);
 
   useEffect(() => {
+    setLoading(true);
     setError(null);
-    getUsers()
-      .then(setUsers)
+    getUsers({ page, limit: PAGE_SIZE, search: deferredSearch })
+      .then((payload) => {
+        if (Array.isArray(payload)) {
+          setUsers(payload);
+          setMeta(null);
+        } else {
+          setUsers(payload.items);
+          setMeta(payload.meta);
+        }
+      })
       .catch(() => setError("Tidak bisa memuat data user. Pastikan Anda login sebagai ADMIN."))
       .finally(() => setLoading(false));
-  }, [reloadKey]);
+  }, [deferredSearch, page, reloadKey]);
+
+  useEffect(() => setPage(1), [deferredSearch]);
+
+  const pageLabel = useMemo(() => {
+    if (!meta) return `${users.length} user`;
+    const from = meta.total === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
+    const to = Math.min(meta.page * meta.limit, meta.total);
+    return `${from}-${to} dari ${meta.total} user`;
+  }, [meta, users.length]);
 
   async function handleDeactivate(id: string) {
     if (!window.confirm("Nonaktifkan user ini?")) return;
     try {
       await deleteResource(`/users/${id}`);
-      setUsers(await getUsers());
+      const payload = await getUsers({ page, limit: PAGE_SIZE, search: deferredSearch });
+      setUsers(Array.isArray(payload) ? payload : payload.items);
+      setMeta(Array.isArray(payload) ? null : payload.meta);
     } catch {
       setError("Gagal menonaktifkan user. Pastikan backend sudah direstart dan Anda login sebagai ADMIN.");
     }
@@ -38,7 +66,9 @@ export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
     if (!confirmed) return;
     try {
       await deleteUserPermanent(id);
-      setUsers(await getUsers());
+      const payload = await getUsers({ page, limit: PAGE_SIZE, search: deferredSearch });
+      setUsers(Array.isArray(payload) ? payload : payload.items);
+      setMeta(Array.isArray(payload) ? null : payload.meta);
     } catch {
       setError("Gagal menghapus permanen user. User mungkin masih punya relasi dokter/perawat/staff/pasien/audit log, atau akun yang sedang digunakan.");
     }
@@ -54,7 +84,9 @@ export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
         isActive: formData.get("isActive") === "true"
       });
       setEditingUser(null);
-      setUsers(await getUsers());
+      const payload = await getUsers({ page, limit: PAGE_SIZE, search: deferredSearch });
+      setUsers(Array.isArray(payload) ? payload : payload.items);
+      setMeta(Array.isArray(payload) ? null : payload.meta);
     } catch {
       setError("Gagal memperbarui user. Pastikan email belum dipakai akun lain.");
     }
@@ -63,6 +95,13 @@ export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
   return (
     <>
       <div className="overflow-hidden rounded-lg border bg-white">
+        <div className="flex flex-col gap-3 border-b p-4 md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:max-w-sm">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a827e]" />
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari nama, email, telepon..." className="pl-9" />
+          </div>
+          <p className="text-sm text-[#6a746f]">{pageLabel}</p>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -102,6 +141,17 @@ export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
             )}
           </TableBody>
         </Table>
+        {meta && meta.totalPages > 1 && (
+          <div className="flex items-center justify-between gap-3 border-t p-4">
+            <Button type="button" variant="outline" disabled={page <= 1 || loading} onClick={() => setPage((value) => Math.max(1, value - 1))}>
+              Sebelumnya
+            </Button>
+            <span className="text-sm text-[#6a746f]">Halaman {meta.page} / {meta.totalPages}</span>
+            <Button type="button" variant="outline" disabled={page >= meta.totalPages || loading} onClick={() => setPage((value) => value + 1)}>
+              Berikutnya
+            </Button>
+          </div>
+        )}
       </div>
 
       <FormModalShell

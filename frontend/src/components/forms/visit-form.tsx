@@ -9,6 +9,7 @@ import { getPatients } from "@/services/patient-service";
 import { getPolyclinics, type Polyclinic } from "@/services/polyclinic-service";
 import { createVisit } from "@/services/visit-service";
 import type { Patient } from "@/types/api";
+import { emitResourceChanged } from "@/utils/resource-events";
 
 function defaultVisitNo() {
   const date = new Date();
@@ -46,6 +47,7 @@ export function VisitForm({ onCreated }: { onCreated?: () => void } = {}) {
         polyclinicId,
         complaint: String(formData.get("complaint") || "") || undefined
       });
+      emitResourceChanged("visits");
       setMessage("Kunjungan berhasil dibuat. Lanjutkan dengan membuat antrian.");
       onCreated?.();
     } catch (err) {
