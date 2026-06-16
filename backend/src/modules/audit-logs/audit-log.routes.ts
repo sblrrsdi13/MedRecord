@@ -15,7 +15,7 @@ auditLogRoutes.get("/", async (req, res) => {
     const logs = await prisma.auditLog.findMany({
       include,
       orderBy: { createdAt: "desc" },
-      take: 100
+      take: 20
     });
     return ok(res, logs);
   }

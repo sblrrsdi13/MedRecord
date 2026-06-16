@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Activity, BadgeDollarSign, Bell, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, FileBarChart, FlaskConical, Gauge, HardDrive, HeartPulse, LayoutDashboard, ListOrdered, LockKeyhole, LogOut, Logs, Megaphone, Pill, Search, Settings, Stethoscope, UserCog, UsersRound, X, type LucideIcon } from "lucide-react";
@@ -180,7 +181,7 @@ function BrandMark({ compact = false, collapsed = false, t }: { compact?: boolea
   return (
     <div className={cn("flex min-w-0 items-center gap-3 transition-all duration-300", collapsed && "justify-center")}>
       <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:scale-105">
-        <img src={brand.logoImageUrl} alt={`${brand.brandName} logo`} className="h-11 w-11 object-contain" />
+        <Image src={brand.logoImageUrl} alt={`${brand.brandName} logo`} width={44} height={44} className="h-11 w-11 object-contain" />
       </div>
       <div className={cn("min-w-0 transition-all duration-200", collapsed ? "w-0 translate-x-2 overflow-hidden opacity-0" : "w-44 opacity-100")}>
         <p className="truncate text-base font-bold text-[#5f7974]">{brand.brandName}</p>

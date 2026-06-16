@@ -13,6 +13,41 @@ import { emitResourceEvent } from "../../socket/socket.js";
 
 export const visitRoutes = Router();
 
+const visitListInclude = {
+  patient: {
+    select: {
+      id: true,
+      patientCode: true,
+      medicalRecordNo: true,
+      userId: true,
+      name: true,
+      nik: true,
+      gender: true,
+      birthDate: true,
+      phone: true,
+      address: true,
+      bloodType: true,
+      allergyNotes: true,
+      createdAt: true,
+      updatedAt: true
+    }
+  },
+  doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
+  polyclinic: {
+    select: {
+      id: true,
+      name: true,
+      code: true,
+      queuePrefix: true,
+      consultationFee: true,
+      description: true,
+      isActive: true
+    }
+  },
+  queue: { select: { id: true, queueNumber: true, status: true, calledAt: true, completedAt: true } },
+  payment: { select: { id: true, invoiceNo: true, status: true, total: true, paidAmount: true, paymentMethod: true } }
+};
+
 const createVisitSchema = z.object({
   body: z.object({
     visitNo: z.string().min(3).optional(),
@@ -27,20 +62,14 @@ visitRoutes.use(authenticate);
 visitRoutes.get("/", authorize(OPERATIONAL_ROLES), async (req, res) => {
   if (!hasPaginationQuery(req.query as Record<string, unknown>)) {
     const visits = await prisma.visit.findMany({
-      include: {
-        patient: true,
-        doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
-        polyclinic: true,
-        queue: true,
-        payment: true
-      },
+      include: visitListInclude,
       orderBy: { visitDate: "desc" },
-      take: 50
+      take: 20
     });
     return ok(res, visits);
   }
 
-  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 25 });
+  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 20 });
   const where = paging.search
     ? {
         OR: [
@@ -58,13 +87,7 @@ visitRoutes.get("/", authorize(OPERATIONAL_ROLES), async (req, res) => {
   const [visits, total] = await Promise.all([
     prisma.visit.findMany({
       where,
-      include: {
-        patient: true,
-        doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
-        polyclinic: true,
-        queue: true,
-        payment: true
-      },
+      include: visitListInclude,
       orderBy: { visitDate: "desc" },
       skip: (paging.page - 1) * paging.limit,
       take: paging.limit

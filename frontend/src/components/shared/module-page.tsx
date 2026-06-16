@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { memo, useDeferredValue, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { Activity, Database, Layers3, MoreHorizontal, Pencil, RefreshCw, Search, Sparkles, TableProperties, Trash2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Activity, Database, Layers3, MoreHorizontal, Pencil, Search, Sparkles, TableProperties, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import type { PaginatedResponse } from "@/types/api";
 import { normalizeResourceName, RESOURCE_CHANGED_EVENT } from "@/utils/resource-events";
 import { useResourceSocket } from "@/hooks/use-resource-socket";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 20;
 
 type Column = {
   key: string;
@@ -146,55 +147,54 @@ function formatCellValue(value: unknown) {
   return String(value);
 }
 
-export function ModulePage({ title, description, endpoint, columns, notes = [], deleteEndpoint, editEndpoint, editFields = [], actionSlot, rowActions = [] }: ModulePageProps) {
+export const ModulePage = memo(function ModulePage({ title, description, endpoint, columns, notes = [], deleteEndpoint, editEndpoint, editFields = [], actionSlot, rowActions = [] }: ModulePageProps) {
   useResourceSocket();
-  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [page, setPage] = useState(1);
-  const [serverMeta, setServerMeta] = useState<PaginatedResponse<Record<string, unknown>>["meta"] | null>(null);
   const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(null);
   const meta = getModuleMeta(endpoint, title);
-
-  const load = useCallback(
-    async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const payload = await getResource<unknown>(endpoint, {
-          page,
-          limit: PAGE_SIZE,
-          search: deferredQuery.trim() || undefined
-        });
-        const normalized = normalizePaginatedRows(payload);
-        setRows(normalized.rows);
-        setServerMeta(normalized.meta);
-      } catch {
-        setError("Data belum dapat dimuat. Pastikan backend aktif dan Anda sudah login.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [deferredQuery, endpoint, page]
+  const queryClient = useQueryClient();
+  const normalizedEndpoint = useMemo(() => normalizeResourceName(endpoint), [endpoint]);
+  const resourceQueryKey = useMemo(
+    () => ["resource", normalizedEndpoint, endpoint, page, PAGE_SIZE, deferredQuery.trim()] as const,
+    [deferredQuery, endpoint, normalizedEndpoint, page]
   );
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  const {
+    data: resourceData,
+    error: queryError,
+    isLoading
+  } = useQuery({
+    queryKey: resourceQueryKey,
+    queryFn: async () => {
+      const payload = await getResource<unknown>(endpoint, {
+        page,
+        limit: PAGE_SIZE,
+        search: deferredQuery.trim() || undefined
+      });
+      return normalizePaginatedRows(payload);
+    },
+    placeholderData: (previous) => previous
+  });
+
+  const rows = resourceData?.rows ?? [];
+  const serverMeta = resourceData?.meta ?? null;
+  const loading = isLoading && !resourceData;
+  const loadError = error ?? (queryError ? "Data belum dapat dimuat. Pastikan backend aktif dan Anda sudah login." : null);
 
   useEffect(() => {
     function handleResourceChanged(event: Event) {
       const detail = (event as CustomEvent<{ resource?: string }>).detail;
-      if (detail?.resource && normalizeResourceName(detail.resource) === normalizeResourceName(endpoint)) {
-        void load();
+      if (detail?.resource && normalizeResourceName(detail.resource) === normalizedEndpoint) {
+        void queryClient.invalidateQueries({ queryKey: ["resource", normalizedEndpoint] });
       }
     }
 
     window.addEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
     return () => window.removeEventListener(RESOURCE_CHANGED_EVENT, handleResourceChanged);
-  }, [endpoint, load]);
+  }, [normalizedEndpoint, queryClient]);
 
   useEffect(() => {
     setPage(1);
@@ -205,7 +205,7 @@ export function ModulePage({ title, description, endpoint, columns, notes = [], 
     if (!window.confirm("Hapus data ini? Aksi ini tidak bisa dibatalkan.")) return;
     try {
       await deleteResource(`${deleteEndpoint}/${id}`);
-      await load();
+      await queryClient.invalidateQueries({ queryKey: ["resource", normalizedEndpoint] });
     } catch {
       setError("Gagal menghapus data. Data mungkin masih dipakai modul lain atau role Anda tidak memiliki akses.");
     }
@@ -224,7 +224,7 @@ export function ModulePage({ title, description, endpoint, columns, notes = [], 
     try {
       await updateResource(`${editEndpoint}/${editingRow.id}`, payload);
       setEditingRow(null);
-      await load();
+      await queryClient.invalidateQueries({ queryKey: ["resource", normalizedEndpoint] });
     } catch {
       setError("Gagal memperbarui data. Periksa format data atau pastikan data tidak bentrok dengan kode unik.");
     }
@@ -290,7 +290,7 @@ export function ModulePage({ title, description, endpoint, columns, notes = [], 
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {(notes.length > 0 ? notes : ["Gunakan tombol tambah di atas halaman untuk input data.", "Data yang sudah dipakai modul lain mungkin tidak bisa dihapus.", "Gunakan refresh setelah menyimpan data baru."]).map((note) => (
+            {(notes.length > 0 ? notes : ["Gunakan tombol tambah di atas halaman untuk input data.", "Data yang sudah dipakai modul lain mungkin tidak bisa dihapus.", "Data akan diperbarui otomatis setelah perubahan tersimpan."]).map((note) => (
               <div key={note} className="rounded-lg bg-[#faf8ef] p-3 text-sm text-[#4a5657]">{note}</div>
             ))}
           </CardContent>
@@ -329,8 +329,8 @@ export function ModulePage({ title, description, endpoint, columns, notes = [], 
               <TableBody>
                 {loading ? (
                   <TableRow><TableCell colSpan={columns.length + 2 + (deleteEndpoint || editEndpoint || rowActions.length > 0 ? 1 : 0)}>Memuat data...</TableCell></TableRow>
-                ) : error ? (
-                  <TableRow><TableCell colSpan={columns.length + 2 + (deleteEndpoint || editEndpoint || rowActions.length > 0 ? 1 : 0)} className="text-destructive">{error}</TableCell></TableRow>
+                ) : loadError ? (
+                  <TableRow><TableCell colSpan={columns.length + 2 + (deleteEndpoint || editEndpoint || rowActions.length > 0 ? 1 : 0)} className="text-destructive">{loadError}</TableCell></TableRow>
                 ) : filteredRows.length === 0 ? (
                   <TableRow><TableCell colSpan={columns.length + 2 + (deleteEndpoint || editEndpoint || rowActions.length > 0 ? 1 : 0)}>Belum ada data.</TableCell></TableRow>
                 ) : (
@@ -450,9 +450,9 @@ export function ModulePage({ title, description, endpoint, columns, notes = [], 
       </FormModalShell>
     </div>
   );
-}
+});
 
-function Metric({ icon: Icon, label, value }: { icon: typeof Database; label: string; value: string }) {
+const Metric = memo(function Metric({ icon: Icon, label, value }: { icon: typeof Database; label: string; value: string }) {
   return (
     <div className="rounded-lg bg-white/10 p-3">
       <Icon className="mb-2 h-4 w-4 text-white/75" />
@@ -460,7 +460,7 @@ function Metric({ icon: Icon, label, value }: { icon: typeof Database; label: st
       <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.05em] text-white/65">{label}</p>
     </div>
   );
-}
+});
 
 
 

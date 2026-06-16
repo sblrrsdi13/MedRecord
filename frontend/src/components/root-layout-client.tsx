@@ -3,6 +3,7 @@
 import { LanguageProvider } from "@/contexts/language-context";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
+import { AppQueryProvider } from "@/components/query-provider";
 import { primeSiteCms } from "@/hooks/use-site-cms";
 import type { SiteCms } from "@/types/site-cms";
 
@@ -39,7 +40,11 @@ export function RootLayoutClient({ children, initialCms }: { children: ReactNode
     return () => observer.disconnect();
   }, []);
 
-  return <LanguageProvider>{children}</LanguageProvider>;
+  return (
+    <AppQueryProvider>
+      <LanguageProvider>{children}</LanguageProvider>
+    </AppQueryProvider>
+  );
 }
 
 

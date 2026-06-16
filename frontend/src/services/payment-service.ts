@@ -55,7 +55,7 @@ export async function getReadyPayments() {
 }
 
 export async function getPayments() {
-  const response = await api.get<ApiResponse<PaginatedResponse<PaymentRow>>>("/payments", { params: { limit: 25 } });
+  const response = await api.get<ApiResponse<PaginatedResponse<PaymentRow>>>("/payments", { params: { limit: 20 } });
   return response.data.data.items;
 }
 

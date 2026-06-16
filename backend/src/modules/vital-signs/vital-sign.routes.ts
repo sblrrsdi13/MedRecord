@@ -34,7 +34,7 @@ vitalSignRoutes.get("/", async (req, res) => {
     const vitalSigns = await prisma.vitalSign.findMany({
       include,
       orderBy: { createdAt: "desc" },
-      take: 50
+      take: 20
     });
     return ok(res, vitalSigns);
   }

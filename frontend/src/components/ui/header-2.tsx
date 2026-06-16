@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import React from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
@@ -50,7 +51,7 @@ export function Header({ cms }: HeaderProps) {
         <nav className={cn("flex h-16 w-full items-center justify-between gap-3 px-1 transition-all duration-500 md:h-14 md:px-2", (scrolled || open) && "px-4 md:px-5")}>
           <Link href="/" onClick={() => setOpen(false)} className="flex min-w-0 items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden transition-all duration-500">
-              <img src={cms.logoImageUrl} alt={`${cms.brandName} logo`} className="h-11 w-11 object-contain" />
+              <Image src={cms.logoImageUrl} alt={`${cms.brandName} logo`} width={44} height={44} className="h-11 w-11 object-contain" priority />
             </span>
             <span className="min-w-0">
               <span className="block truncate text-sm font-black uppercase leading-4 text-[#5f7974]">{cms.brandName}</span>

@@ -43,12 +43,12 @@ prescriptionRoutes.get("/", async (req, res) => {
     const prescriptions = await prisma.prescription.findMany({
       include: { medicalRecord: { include: { patient: true, doctor: { include: { user: { select: { name: true } } } } } }, items: { include: { medicine: true } } },
       orderBy: { createdAt: "desc" },
-      take: 50
+      take: 20
     });
     return ok(res, prescriptions);
   }
 
-  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 25 });
+  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 20 });
   const where = paging.search
     ? {
         OR: [

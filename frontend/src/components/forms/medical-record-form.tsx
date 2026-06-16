@@ -5,7 +5,7 @@ import { ClipboardList, FileText, IdCard, Save, Stethoscope } from "lucide-react
 import { Input } from "@/components/ui/input";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
 import { createMedicalRecord } from "@/services/clinical-service";
-import { getResource } from "@/services/resource-service";
+import { getCachedResource, getResource } from "@/services/resource-service";
 import { useAuthStore } from "@/store/auth-store";
 import type { Patient, RoleName } from "@/types/api";
 import { emitResourceChanged } from "@/utils/resource-events";
@@ -30,7 +30,7 @@ export function MedicalRecordForm() {
   useEffect(() => {
     if (!canManageMedicalRecords) return;
     getResource<VisitRow[]>("/visits").then(setVisits).catch(() => setVisits([]));
-    if (!isDoctorAccount) getResource<DoctorRow[]>("/doctors").then(setDoctors).catch(() => setDoctors([]));
+    if (!isDoctorAccount) getCachedResource<DoctorRow[]>("/doctors").then(setDoctors).catch(() => setDoctors([]));
   }, [canManageMedicalRecords, isDoctorAccount]);
 
   async function onSubmit(formData: FormData) {

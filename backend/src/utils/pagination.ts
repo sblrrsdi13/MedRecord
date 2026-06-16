@@ -6,7 +6,7 @@ export type PaginationInput = {
 
 export function parsePagination(query: Record<string, unknown>, defaults: Partial<PaginationInput> = {}): PaginationInput {
   const page = Math.max(1, Number(query.page ?? defaults.page ?? 1) || 1);
-  const limit = Math.min(100, Math.max(1, Number(query.limit ?? defaults.limit ?? 25) || 25));
+  const limit = Math.min(25, Math.max(1, Number(query.limit ?? defaults.limit ?? 20) || 20));
   const rawSearch = typeof query.search === "string" ? query.search.trim() : "";
 
   return {

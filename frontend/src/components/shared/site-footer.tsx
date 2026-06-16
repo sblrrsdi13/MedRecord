@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Send, Twitter, Youtube, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useSiteCms } from "@/hooks/use-site-cms";
@@ -49,7 +50,7 @@ export function SiteFooter({ cms: providedCms }: { cms?: SiteCms }) {
           <div>
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center overflow-hidden">
-                <img src={cms.logoImageUrl} alt={`${cms.brandName} logo`} className="h-full w-full object-contain" />
+                <Image src={cms.logoImageUrl} alt={`${cms.brandName} logo`} width={44} height={44} className="h-full w-full object-contain" />
               </div>
               <div>
                 <p className="text-xl font-black tracking-tight text-[#2a3234]">{cms.brandName}</p>

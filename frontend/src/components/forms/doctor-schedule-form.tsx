@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createDoctorSchedule } from "@/services/doctor-service";
 import { getPolyclinics, type Polyclinic } from "@/services/polyclinic-service";
-import { getResource } from "@/services/resource-service";
+import { getCachedResource } from "@/services/resource-service";
 import { sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
 import { emitResourceChanged } from "@/utils/resource-events";
 
@@ -41,7 +41,7 @@ export function DoctorScheduleForm() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getResource<DoctorRow[]>("/doctors").then(setDoctors).catch(() => setDoctors([]));
+    getCachedResource<DoctorRow[]>("/doctors").then(setDoctors).catch(() => setDoctors([]));
     getPolyclinics({ page: 1 }).then((data) => setPolyclinics(data.items)).catch(() => setPolyclinics([]));
   }, []);
 

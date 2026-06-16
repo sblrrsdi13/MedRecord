@@ -34,12 +34,12 @@ paymentRoutes.get("/", async (req, res) => {
     const payments = await prisma.payment.findMany({
       include: { visit: { include: { patient: true } }, details: true },
       orderBy: { createdAt: "desc" },
-      take: 50
+      take: 20
     });
     return ok(res, payments);
   }
 
-  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 25 });
+  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 20 });
   const statusSearch = ["unpaid", "partial", "paid", "void"].includes(String(paging.search)) ? paging.search as "unpaid" | "partial" | "paid" | "void" : undefined;
   const where = paging.search
     ? {
@@ -85,7 +85,7 @@ paymentRoutes.get("/ready", async (_req, res) => {
       payment: true
     },
     orderBy: { visitDate: "desc" },
-    take: 50
+    take: 20
   });
 
   const filtered = readyVisits.filter((visit) => !visit.payment);

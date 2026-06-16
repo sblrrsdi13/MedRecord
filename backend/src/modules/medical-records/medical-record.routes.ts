@@ -15,6 +15,26 @@ import { emitResourceEvent } from "../../socket/socket.js";
 
 export const medicalRecordRoutes = Router();
 
+const medicalRecordListInclude = {
+  patient: {
+    select: {
+      id: true,
+      patientCode: true,
+      medicalRecordNo: true,
+      name: true,
+      nik: true,
+      gender: true,
+      birthDate: true,
+      phone: true,
+      address: true,
+      bloodType: true,
+      allergyNotes: true
+    }
+  },
+  doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
+  visit: { select: { id: true, visitNo: true, visitDate: true, complaint: true, status: true } }
+};
+
 const schema = z.object({
   body: z.object({
     visitId: z.string().uuid(),
@@ -138,18 +158,14 @@ medicalRecordRoutes.use(authenticate);
 medicalRecordRoutes.get("/", authorize(OPERATIONAL_ROLES), async (req, res) => {
   if (!hasPaginationQuery(req.query as Record<string, unknown>)) {
     const records = await prisma.medicalRecord.findMany({
-      include: {
-        patient: true,
-        doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
-        visit: true
-      },
+      include: medicalRecordListInclude,
       orderBy: { createdAt: "desc" },
-      take: 50
+      take: 20
     });
     return ok(res, records);
   }
 
-  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 25 });
+  const paging = parsePagination(req.query as Record<string, unknown>, { limit: 20 });
   const where = paging.search
     ? {
         OR: [
@@ -169,11 +185,7 @@ medicalRecordRoutes.get("/", authorize(OPERATIONAL_ROLES), async (req, res) => {
   const [records, total] = await Promise.all([
     prisma.medicalRecord.findMany({
       where,
-      include: {
-        patient: true,
-        doctor: { include: { user: { select: { id: true, name: true, email: true } } } },
-        visit: true
-      },
+      include: medicalRecordListInclude,
       orderBy: { createdAt: "desc" },
       skip: (paging.page - 1) * paging.limit,
       take: paging.limit

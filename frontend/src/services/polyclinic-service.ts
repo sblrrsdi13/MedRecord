@@ -1,5 +1,6 @@
 import { api } from "./api";
 import type { ApiResponse } from "@/types/api";
+import { getCachedResource, invalidateCachedResource } from "@/services/resource-service";
 
 export type Polyclinic = {
   id: string;
@@ -17,6 +18,10 @@ type Paginated<T> = {
 };
 
 export async function getPolyclinics(params?: { page?: number; search?: string }) {
+  if (!params?.search) {
+    return getCachedResource<Paginated<Polyclinic>>("/polyclinics", params);
+  }
+
   const response = await api.get<ApiResponse<Paginated<Polyclinic>>>("/polyclinics", { params });
   return response.data.data;
 }
@@ -30,6 +35,7 @@ export async function createPolyclinic(payload: {
   isActive: boolean;
 }) {
   const response = await api.post<ApiResponse<Polyclinic>>("/polyclinics", payload);
+  invalidateCachedResource("/polyclinics");
   return response.data.data;
 }
 

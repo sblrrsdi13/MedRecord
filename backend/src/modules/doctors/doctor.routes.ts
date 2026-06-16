@@ -21,7 +21,10 @@ const createSchema = z.object({
 doctorRoutes.use(authenticate);
 doctorRoutes.get("/", async (_req, res) => {
   const doctors = await prisma.doctor.findMany({
-    include: { user: { select: { id: true, name: true, email: true, phone: true } }, polyclinic: true },
+    include: {
+      user: { select: { id: true, name: true, email: true, phone: true } },
+      polyclinic: { select: { id: true, name: true, code: true, queuePrefix: true, isActive: true } }
+    },
     orderBy: { createdAt: "desc" }
   });
   return ok(res, doctors);

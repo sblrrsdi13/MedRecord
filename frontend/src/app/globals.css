@@ -69,7 +69,7 @@ body {
     border: 1px solid rgba(152, 161, 150, 0.32);
     background: linear-gradient(145deg, rgba(250, 248, 239, 0.9), rgba(230, 239, 229, 0.68));
     box-shadow: var(--theme-shadow), var(--theme-inset);
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(8px);
   }
 
   .soft-hover {

@@ -1,6 +1,7 @@
 "use client";
 
 import axios from "axios";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { Socket } from "socket.io-client";
@@ -297,7 +298,7 @@ export function PatientPortalView() {
         <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden">
-              <img src={cms.logoImageUrl} alt={`${cms.brandName} logo`} className="h-11 w-11 object-contain" />
+              <Image src={cms.logoImageUrl} alt={`${cms.brandName} logo`} width={44} height={44} className="h-11 w-11 object-contain" priority />
             </div>
             <div className="min-w-0">
               <h1 className="truncate text-base font-bold text-[#5f7974]">{cms.brandName}</h1>

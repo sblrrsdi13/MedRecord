@@ -18,9 +18,46 @@ export async function updateSiteCmsSettings(payload: SiteCms) {
   return response.data.data;
 }
 
+const imageUploadLimits = {
+  logo: { width: 512, height: 512, quality: 0.86 },
+  favicon: { width: 256, height: 256, quality: 0.86 },
+  hero: { width: 1920, height: 1080, quality: 0.82 },
+  doctor: { width: 1280, height: 900, quality: 0.82 }
+} as const;
+
+async function compressCmsImage(file: File, purpose: keyof typeof imageUploadLimits) {
+  if (file.type === "image/svg+xml" || !file.type.startsWith("image/")) return file;
+  if (typeof window === "undefined" || typeof createImageBitmap === "undefined") return file;
+
+  const limit = imageUploadLimits[purpose];
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, limit.width / bitmap.width, limit.height / bitmap.height);
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d", { alpha: true });
+  if (!context) return file;
+
+  context.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/webp", limit.quality);
+  });
+  if (!blob || blob.size >= file.size) return file;
+
+  return new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
+    type: "image/webp",
+    lastModified: Date.now()
+  });
+}
+
 export async function uploadCmsImage(file: File, purpose: "logo" | "favicon" | "hero" | "doctor") {
+  const optimizedFile = await compressCmsImage(file, purpose);
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", optimizedFile);
   formData.append("purpose", purpose);
 
   const token = useAuthStore.getState().accessToken;

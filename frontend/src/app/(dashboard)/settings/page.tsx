@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { AlertTriangle, Eye, Save, Settings, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -358,7 +359,7 @@ function ImageField({
       <div className="grid gap-3 rounded-xl border border-[#c7c1b5] bg-[#faf8ef] p-3 md:grid-cols-[120px_1fr]">
         <div className="flex h-28 items-center justify-center overflow-hidden rounded-lg border bg-white">
           {preview ? (
-            <img src={value} alt={`${label} preview`} className="h-full w-full object-cover" />
+            <Image src={value} alt={`${label} preview`} width={160} height={112} className="h-full w-full object-cover" />
           ) : (
             <span className="px-3 text-center text-xs text-[#7a827e]">Belum ada gambar</span>
           )}
@@ -385,13 +386,13 @@ function Preview({ cms }: { cms: SiteCms }) {
   return (
     <section className="max-h-[calc(100vh-7rem)] overflow-y-auto rounded-3xl border border-[#c7c1b5] bg-white shadow-xl [scrollbar-width:thin]">
       <div className="relative min-h-[560px] p-5">
-        <img src={cms.heroImageUrl} alt="Preview hero" className="absolute inset-0 h-full w-full object-cover" />
+        <Image src={cms.heroImageUrl} alt="Preview hero" fill sizes="420px" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/82 to-white/20" />
         <div className="relative z-10">
           <div className="flex items-center justify-between rounded-full bg-white/80 p-2 backdrop-blur-xl">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center overflow-hidden">
-                <img src={cms.logoImageUrl} alt={`${cms.brandName} logo`} className="h-full w-full object-contain" />
+                <Image src={cms.logoImageUrl} alt={`${cms.brandName} logo`} width={36} height={36} className="h-full w-full object-contain" />
               </div>
               <div>
                 <p className="text-xs font-black uppercase text-[#5f7974]">{cms.brandName}</p>
@@ -423,7 +424,7 @@ function Preview({ cms }: { cms: SiteCms }) {
         <div className="grid gap-3">
           {cms.services.slice(0, 3).map((item) => (
             <div key={item.title} className="overflow-hidden rounded-xl border bg-white">
-              <img src={item.image} alt={item.title} className="h-28 w-full object-cover" />
+              <Image src={item.image} alt={item.title} width={420} height={112} className="h-28 w-full object-cover" />
               <div className="p-3">
                 <p className="text-sm font-bold">{item.title}</p>
                 <p className="mt-1 text-xs text-[#6a746f]">{item.desc}</p>
@@ -432,7 +433,7 @@ function Preview({ cms }: { cms: SiteCms }) {
           ))}
         </div>
         <div className="mt-3 rounded-xl border bg-white p-3">
-          <img src={cms.doctorImageUrl} alt="Preview dokter" className="h-32 w-full rounded-lg object-cover" />
+          <Image src={cms.doctorImageUrl} alt="Preview dokter" width={420} height={128} className="h-32 w-full rounded-lg object-cover" />
           <p className="mt-3 text-xs font-bold uppercase text-[#5f7974]">{cms.doctorSectionEyebrow}</p>
           <p className="mt-1 font-black">{cms.doctorSectionTitle}</p>
           <p className="mt-2 text-xs leading-5 text-[#6a746f]">{cms.doctorSectionDescription}</p>
@@ -451,7 +452,7 @@ function Preview({ cms }: { cms: SiteCms }) {
         </div>
         <div className="rounded-xl border bg-white p-4">
           <div className="flex items-center gap-2">
-            <img src={cms.logoImageUrl} alt={`${cms.brandName} logo`} className="h-10 w-10 object-contain" />
+            <Image src={cms.logoImageUrl} alt={`${cms.brandName} logo`} width={40} height={40} className="h-10 w-10 object-contain" />
             <div>
               <p className="font-black">{cms.brandName}</p>
               <p className="text-xs text-[#6a746f]">{cms.brandSubtitle}</p>

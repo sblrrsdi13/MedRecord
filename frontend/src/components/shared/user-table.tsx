@@ -1,6 +1,7 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { memo, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,51 +12,41 @@ import { deleteResource, updateResource } from "@/services/resource-service";
 import { FormModalShell } from "@/components/shared/form-action-modal";
 import type { PaginatedResponse } from "@/types/api";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 20;
 
-export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
-  const [users, setUsers] = useState<UserRow[]>([]);
+export const UserTable = memo(function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState<PaginatedResponse<UserRow>["meta"] | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const deferredSearch = useDeferredValue(search);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    getUsers({ page, limit: PAGE_SIZE, search: deferredSearch })
-      .then((payload) => {
-        if (Array.isArray(payload)) {
-          setUsers(payload);
-          setMeta(null);
-        } else {
-          setUsers(payload.items);
-          setMeta(payload.meta);
-        }
-      })
-      .catch(() => setError("Tidak bisa memuat data user. Pastikan Anda login sebagai ADMIN."))
-      .finally(() => setLoading(false));
-  }, [deferredSearch, page, reloadKey]);
+  const { data, error: queryError, isLoading } = useQuery({
+    queryKey: ["users", page, PAGE_SIZE, deferredSearch, reloadKey],
+    queryFn: () => getUsers({ page, limit: PAGE_SIZE, search: deferredSearch }),
+    placeholderData: (previous) => previous
+  });
+
+  const usersData = Array.isArray(data) ? data : data?.items ?? [];
+  const meta = Array.isArray(data) ? null : data?.meta ?? null;
+  const loading = isLoading && !data;
+  const loadError = error ?? (queryError ? "Tidak bisa memuat data user. Pastikan Anda login sebagai ADMIN." : null);
 
   useEffect(() => setPage(1), [deferredSearch]);
 
   const pageLabel = useMemo(() => {
-    if (!meta) return `${users.length} user`;
+    if (!meta) return `${usersData.length} user`;
     const from = meta.total === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
     const to = Math.min(meta.page * meta.limit, meta.total);
     return `${from}-${to} dari ${meta.total} user`;
-  }, [meta, users.length]);
+  }, [meta, usersData.length]);
 
   async function handleDeactivate(id: string) {
     if (!window.confirm("Nonaktifkan user ini?")) return;
     try {
       await deleteResource(`/users/${id}`);
-      const payload = await getUsers({ page, limit: PAGE_SIZE, search: deferredSearch });
-      setUsers(Array.isArray(payload) ? payload : payload.items);
-      setMeta(Array.isArray(payload) ? null : payload.meta);
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
     } catch {
       setError("Gagal menonaktifkan user. Pastikan backend sudah direstart dan Anda login sebagai ADMIN.");
     }
@@ -66,9 +57,7 @@ export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
     if (!confirmed) return;
     try {
       await deleteUserPermanent(id);
-      const payload = await getUsers({ page, limit: PAGE_SIZE, search: deferredSearch });
-      setUsers(Array.isArray(payload) ? payload : payload.items);
-      setMeta(Array.isArray(payload) ? null : payload.meta);
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
     } catch {
       setError("Gagal menghapus permanen user. User mungkin masih punya relasi dokter/perawat/staff/pasien/audit log, atau akun yang sedang digunakan.");
     }
@@ -84,9 +73,7 @@ export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
         isActive: formData.get("isActive") === "true"
       });
       setEditingUser(null);
-      const payload = await getUsers({ page, limit: PAGE_SIZE, search: deferredSearch });
-      setUsers(Array.isArray(payload) ? payload : payload.items);
-      setMeta(Array.isArray(payload) ? null : payload.meta);
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
     } catch {
       setError("Gagal memperbarui user. Pastikan email belum dipakai akun lain.");
     }
@@ -115,12 +102,12 @@ export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={5}>Memuat user...</TableCell></TableRow>
-            ) : error ? (
-              <TableRow><TableCell colSpan={5} className="text-destructive">{error}</TableCell></TableRow>
-            ) : users.length === 0 ? (
+            ) : loadError ? (
+              <TableRow><TableCell colSpan={5} className="text-destructive">{loadError}</TableCell></TableRow>
+            ) : usersData.length === 0 ? (
               <TableRow><TableCell colSpan={5}>Belum ada user.</TableCell></TableRow>
             ) : (
-              users.map((user) => (
+              usersData.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
@@ -191,7 +178,7 @@ export function UserTable({ reloadKey = 0 }: { reloadKey?: number }) {
       </FormModalShell>
     </>
   );
-}
+});
 
 
 

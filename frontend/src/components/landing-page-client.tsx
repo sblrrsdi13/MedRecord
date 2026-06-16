@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Activity, Ambulance, Baby, CheckCircle2, HeartPulse, Hospital, ShieldCheck, Stethoscope, type LucideIcon } from "lucide-react";
 import { useEffect } from "react";
 import { SiteFooter } from "@/components/shared/site-footer";
@@ -55,11 +56,12 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
       )}
 
       <section id="home" className="relative flex min-h-screen items-center overflow-hidden">
-        <img
+        <Image
           src={cms.heroImageUrl}
           alt="Dokter dan pasien di ruang klinik modern"
-          fetchPriority="high"
-          decoding="async"
+          fill
+          priority
+          sizes="100vw"
           className="landing-hero-image absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#faf8ef]/98 via-[#faf8ef]/90 to-[#d9d5c9]/36" />
@@ -127,7 +129,7 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
             {cms.services.map((item) => (
               <article key={item.title} className="scroll-reveal landing-card soft-panel group min-w-[84vw] snap-center overflow-hidden rounded-3xl p-4 transition duration-300 hover:-translate-y-2 sm:min-w-[420px] lg:min-w-[31%]">
                 <div className="overflow-hidden rounded-2xl">
-                  <img src={item.image} alt={item.title} loading="lazy" decoding="async" width={640} height={320} className="h-52 w-full object-cover transition duration-700 group-hover:scale-110" />
+                  <Image src={item.image} alt={item.title} width={640} height={320} sizes="(min-width: 1024px) 31vw, (min-width: 640px) 420px, 84vw" className="h-52 w-full object-cover transition duration-700 group-hover:scale-110" />
                 </div>
                 <div className="p-4">
                   <h3 className="text-xl font-black">{item.title}</h3>
@@ -142,7 +144,7 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
       <section id="doctors" className="content-auto scroll-reveal px-4 py-16 md:px-8">
         <div className="soft-panel mx-auto grid max-w-[1160px] gap-8 rounded-[2rem] p-6 md:grid-cols-[0.9fr_1.1fr] md:p-10">
           <div className="scroll-reveal relative min-h-80 overflow-hidden rounded-3xl bg-[#d9d5c9]">
-            <img src={cms.doctorImageUrl} alt="Dokter klinik" loading="lazy" decoding="async" width={720} height={520} className="absolute inset-0 h-full w-full object-cover" />
+            <Image src={cms.doctorImageUrl} alt="Dokter klinik" fill sizes="(min-width: 768px) 45vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#5f7974]/55 to-transparent" />
           </div>
           <div className="scroll-reveal flex flex-col justify-center">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { LogIn, ShieldCheck, Sparkles, UserPlus, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/components/forms/login-form";
@@ -27,7 +28,7 @@ export default function LoginPage() {
       <section className="relative flex min-h-[calc(100vh-1rem)] w-full flex-col gap-3 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(440px,520px)] xl:grid-cols-[minmax(0,1fr)_minmax(500px,560px)]">
         <div className="order-2 flex min-h-0 flex-col justify-center overflow-hidden px-5 py-10 lg:order-1 lg:px-10 lg:py-10">
           <div className="mb-12 flex items-center gap-3 lg:mb-16">
-            <img src={cms.logoImageUrl} alt={`${cms.brandName} logo`} className="h-12 w-12 object-contain" />
+            <Image src={cms.logoImageUrl} alt={`${cms.brandName} logo`} width={48} height={48} className="h-12 w-12 object-contain" priority />
             <div>
               <p className="font-black uppercase text-[#2a3234]">{cms.brandName}</p>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#5f7974]">{cms.brandSubtitle}</p>
@@ -55,7 +56,7 @@ export default function LoginPage() {
             <CardHeader className="shrink-0 pb-3">
               <div className="mb-3 flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center overflow-hidden">
-                  <img src={cms.logoImageUrl} alt={`${cms.brandName} logo`} className="h-12 w-12 object-contain" />
+                  <Image src={cms.logoImageUrl} alt={`${cms.brandName} logo`} width={48} height={48} className="h-12 w-12 object-contain" priority />
                 </div>
                 <div className="min-w-0">
                   <CardTitle>{activeTab === "login" ? "Masuk ke Dashboard" : "Daftar Akun Pasien"}</CardTitle>
