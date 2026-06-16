@@ -14,7 +14,7 @@ import { SelectChooser } from "@/components/ui/select-chooser";
 import { registerPatient } from "@/services/auth-service";
 import { patientRegisterSchema, type PatientRegisterInput } from "@/validations/auth.schema";
 
-export function PatientRegisterForm() {
+export function PatientRegisterForm({ onLoginClick }: { onLoginClick?: () => void }) {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const form = useForm<PatientRegisterInput>({
@@ -60,7 +60,8 @@ export function PatientRegisterForm() {
           </div>
         </div>
         <Link
-          href="/login"
+          href="/login?tab=login"
+          onClick={onLoginClick}
           className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           Masuk ke Login

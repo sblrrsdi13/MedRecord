@@ -77,7 +77,7 @@ export default function LoginPage() {
               activeTab === "login" ? "" : "flex-1 space-y-5"
             )}>
               <div key={activeTab} className={cn("animate-in fade-in-0 slide-in-from-bottom-2 duration-300", activeTab === "login" && "mx-auto w-full max-w-md")}>
-                {activeTab === "login" ? <LoginForm /> : <PatientRegisterForm />}
+                {activeTab === "login" ? <LoginForm /> : <PatientRegisterForm onLoginClick={() => setActiveTab("login")} />}
               </div>
               <div className={cn("flex items-center gap-2 rounded-xl bg-[#e6efe5] p-3 text-xs font-medium text-[#5f7974]", activeTab === "login" && "mx-auto mt-5 w-full max-w-md")}>
               <ShieldCheck className="h-4 w-4 shrink-0" />
