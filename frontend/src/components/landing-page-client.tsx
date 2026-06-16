@@ -5,7 +5,7 @@ import { Activity, Ambulance, Baby, CheckCircle2, HeartPulse, Hospital, ShieldCh
 import { useEffect } from "react";
 import { SiteFooter } from "@/components/shared/site-footer";
 import { Header } from "@/components/ui/header-2";
-import { primeSiteCms, useSiteCms } from "@/hooks/use-site-cms";
+import { useSiteCms } from "@/hooks/use-site-cms";
 import type { SiteCms } from "@/types/site-cms";
 
 const departmentIcons: Record<string, LucideIcon> = {
@@ -24,8 +24,7 @@ const stats = [
 ];
 
 export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
-  primeSiteCms(initialCms);
-  const cms = useSiteCms();
+  const cms = useSiteCms(true, true, initialCms);
 
   useEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>(".scroll-reveal"));

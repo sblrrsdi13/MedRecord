@@ -120,10 +120,15 @@ function stopCmsRealtime() {
   }
 }
 
-export function useSiteCms(enabled = true, realtime = true) {
-  const cms = useSyncExternalStore(subscribe, getSnapshot, () => defaultSiteCms);
+export function useSiteCms(enabled = true, realtime = true, initialCms?: Partial<SiteCms>) {
+  const cms = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => (initialCms ? mergeCms(initialCms) : currentCms)
+  );
 
   useEffect(() => {
+    if (initialCms) primeSiteCms(initialCms);
     if (!enabled) return;
     let idleId: number | null = null;
     let didStartRealtime = false;
@@ -155,7 +160,7 @@ export function useSiteCms(enabled = true, realtime = true) {
       }
       if (didStartRealtime) stopCmsRealtime();
     };
-  }, [enabled, realtime]);
+  }, [enabled, realtime, initialCms]);
 
   return cms;
 }
