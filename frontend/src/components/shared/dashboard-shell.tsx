@@ -99,7 +99,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="theme-surface flex min-h-screen overflow-x-hidden">
+    <div className="theme-surface flex h-dvh overflow-hidden">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
         <Topbar />

@@ -86,27 +86,30 @@ export function AppSidebar() {
   const visibleGroups = getVisibleSidebarGroups(role);
 
   return (
-    <aside
-      className={cn(
-        "hidden h-dvh shrink-0 overflow-visible border-r border-[#c7c1b5]/70 bg-[#eef1e8]/80 shadow-[0_18px_38px_rgba(46,57,57,.10)] backdrop-blur-xl transition-[width] duration-300 ease-out md:sticky md:top-0 md:flex md:flex-col",
-        collapsed ? "w-[86px]" : "w-72"
-      )}
-    >
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-visible">
-        <BrandHeader collapsed={collapsed} t={t} />
-        <button
-          type="button"
-          onClick={() => setCollapsed((value) => !value)}
-          className="absolute right-0 top-8 z-40 flex h-10 w-6 items-center justify-center rounded-l-xl border-y border-l border-[#d9d5c9] bg-white/95 text-[#7a827e] shadow-md shadow-stone-900/10 transition hover:bg-white hover:text-[#5f7974] hover:shadow-lg"
-          aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
-        >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
-        <SidebarSearch collapsed={collapsed} />
-        <SidebarNav groups={visibleGroups} pathname={pathname} t={t} collapsed={collapsed} />
-        <SidebarProfile name={user?.name ?? "Guest"} email={user?.email ?? "-"} role={user?.role ?? "Clinic User"} t={t} collapsed={collapsed} />
-      </div>
-    </aside>
+    <>
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 hidden h-dvh overflow-visible border-r border-[#c7c1b5]/70 bg-[#eef1e8]/80 shadow-[0_18px_38px_rgba(46,57,57,.10)] backdrop-blur-xl transition-[width] duration-300 ease-out md:flex md:flex-col",
+          collapsed ? "w-[86px]" : "w-72"
+        )}
+      >
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-visible">
+          <BrandHeader collapsed={collapsed} t={t} />
+          <button
+            type="button"
+            onClick={() => setCollapsed((value) => !value)}
+            className="absolute right-0 top-8 z-40 flex h-10 w-6 items-center justify-center rounded-l-xl border-y border-l border-[#d9d5c9] bg-white/95 text-[#7a827e] shadow-md shadow-stone-900/10 transition hover:bg-white hover:text-[#5f7974] hover:shadow-lg"
+            aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </button>
+          <SidebarSearch collapsed={collapsed} />
+          <SidebarNav groups={visibleGroups} pathname={pathname} t={t} collapsed={collapsed} />
+          <SidebarProfile name={user?.name ?? "Guest"} email={user?.email ?? "-"} role={user?.role ?? "Clinic User"} t={t} collapsed={collapsed} />
+        </div>
+      </aside>
+      <div aria-hidden className={cn("hidden h-dvh shrink-0 transition-[width] duration-300 ease-out md:block", collapsed ? "w-[86px]" : "w-72")} />
+    </>
   );
 }
 
