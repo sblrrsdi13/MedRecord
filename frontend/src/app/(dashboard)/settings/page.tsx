@@ -5,10 +5,11 @@ import { AlertTriangle, Eye, Save, Settings, type LucideIcon } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { defaultSiteCms } from "@/constants/default-site-cms";
-import { getSiteCmsSettings, updateSiteCmsSettings } from "@/services/site-settings-service";
+import { getSiteCmsSettings, updateSiteCmsSettings, uploadCmsImage } from "@/services/site-settings-service";
 import type { SiteCms } from "@/types/site-cms";
 
 type CmsArrayKey = "navLinks" | "departments" | "services" | "socialLinks";
+type CmsImageKey = "logoImageUrl" | "faviconUrl" | "heroImageUrl" | "doctorImageUrl";
 
 const arrayHints: Record<CmsArrayKey, string> = {
   navLinks: `[{"label":"Home","href":"#home"}]`,
@@ -18,6 +19,12 @@ const arrayHints: Record<CmsArrayKey, string> = {
 };
 
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+const imagePurposeByKey: Record<CmsImageKey, "logo" | "favicon" | "hero" | "doctor"> = {
+  logoImageUrl: "logo",
+  faviconUrl: "favicon",
+  heroImageUrl: "hero",
+  doctorImageUrl: "doctor"
+};
 
 function stringify(value: unknown) {
   return JSON.stringify(value, null, 2);
@@ -34,6 +41,7 @@ export default function SettingsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingField, setUploadingField] = useState<CmsImageKey | null>(null);
 
   useEffect(() => {
     getSiteCmsSettings()
@@ -72,13 +80,13 @@ export default function SettingsPage() {
     updateField(key, value.toUpperCase().replace(/[^A-Z0-9]/g, "") as SiteCms[typeof key]);
   }
 
-  function handleImageUpload(key: "logoImageUrl" | "faviconUrl" | "heroImageUrl" | "doctorImageUrl", file?: File) {
+  async function handleImageUpload(key: CmsImageKey, file?: File) {
     if (!file) return;
     setMessage(null);
     setError(null);
 
-    if (!file.type.startsWith("image/")) {
-      setError("File harus berupa gambar.");
+    if (!["image/png", "image/jpeg", "image/webp", "image/svg+xml"].includes(file.type)) {
+      setError("File harus berupa gambar PNG, JPG, WebP, atau SVG.");
       return;
     }
 
@@ -87,10 +95,16 @@ export default function SettingsPage() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => updateField(key, String(reader.result) as SiteCms[typeof key]);
-    reader.onerror = () => setError("Gagal membaca file gambar.");
-    reader.readAsDataURL(file);
+    try {
+      setUploadingField(key);
+      const url = await uploadCmsImage(file, imagePurposeByKey[key]);
+      updateField(key, url as SiteCms[typeof key]);
+      setMessage("Gambar berhasil di-upload ke Vercel Blob. Klik Simpan CMS untuk memakai perubahan ini.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal upload gambar ke Vercel Blob.");
+    } finally {
+      setUploadingField(null);
+    }
   }
 
   async function handleSave() {
@@ -156,6 +170,7 @@ export default function SettingsPage() {
                 recommendation="Maks. 2MB. Rekomendasi 512 x 512 px, rasio 1:1, PNG/WebP transparan lebih baik."
                 onTextChange={(value) => updateField("logoImageUrl", value)}
                 onUpload={(file) => handleImageUpload("logoImageUrl", file)}
+                uploading={uploadingField === "logoImageUrl"}
               />
               <ImageField
                 label="Favicon"
@@ -163,6 +178,7 @@ export default function SettingsPage() {
                 recommendation="Maks. 2MB. Rekomendasi 64 x 64 px atau 512 x 512 px, rasio 1:1."
                 onTextChange={(value) => updateField("faviconUrl", value)}
                 onUpload={(file) => handleImageUpload("faviconUrl", file)}
+                uploading={uploadingField === "faviconUrl"}
               />
               <ImageField
                 label="Hero Image"
@@ -170,6 +186,7 @@ export default function SettingsPage() {
                 recommendation="Maks. 2MB. Rekomendasi 2200 x 1200 px atau rasio 16:9, area penting jangan terlalu gelap."
                 onTextChange={(value) => updateField("heroImageUrl", value)}
                 onUpload={(file) => handleImageUpload("heroImageUrl", file)}
+                uploading={uploadingField === "heroImageUrl"}
               />
             </div>
           </Panel>
@@ -235,6 +252,7 @@ export default function SettingsPage() {
                 recommendation="Maks. 2MB. Rekomendasi 900 x 650 px atau rasio 4:3, gunakan foto klinik/dokter yang terang."
                 onTextChange={(value) => updateField("doctorImageUrl", value)}
                 onUpload={(file) => handleImageUpload("doctorImageUrl", file)}
+                uploading={uploadingField === "doctorImageUrl"}
               />
               <Field label="Doctor Eyebrow"><Input value={cms.doctorSectionEyebrow} onChange={(event) => updateField("doctorSectionEyebrow", event.target.value)} /></Field>
               <Field label="Doctor Title"><Input value={cms.doctorSectionTitle} onChange={(event) => updateField("doctorSectionTitle", event.target.value)} /></Field>
@@ -322,15 +340,17 @@ function ImageField({
   value,
   recommendation,
   onTextChange,
-  onUpload
+  onUpload,
+  uploading
 }: {
   label: string;
   value: string;
   recommendation: string;
   onTextChange: (value: string) => void;
   onUpload: (file?: File) => void;
+  uploading?: boolean;
 }) {
-  const preview = value.startsWith("data:image") || value.startsWith("http");
+  const preview = value.startsWith("data:image") || value.startsWith("http") || value.startsWith("/");
 
   return (
     <div className="grid gap-2 md:col-span-2">
@@ -347,12 +367,13 @@ function ImageField({
           <Input value={value} onChange={(event) => onTextChange(event.target.value)} placeholder="https://... atau upload file gambar" />
           <input
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            disabled={uploading}
             onChange={(event) => onUpload(event.target.files?.[0])}
-            className="block w-full rounded-lg border border-[#c7c1b5] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#5f7974] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"
+            className="block w-full rounded-lg border border-[#c7c1b5] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#5f7974] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white disabled:cursor-not-allowed disabled:opacity-60"
           />
           <p className="text-xs leading-5 text-[#7a827e]">
-            Bisa pakai link gambar atau upload PNG/JPG/WebP. {recommendation}
+            {uploading ? "Sedang upload ke Vercel Blob..." : "Bisa pakai link gambar atau upload PNG/JPG/WebP/SVG."} {recommendation}
           </p>
         </div>
       </div>

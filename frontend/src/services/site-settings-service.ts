@@ -1,4 +1,5 @@
 import { api } from "@/services/api";
+import { useAuthStore } from "@/store/auth-store";
 import type { ApiResponse } from "@/types/api";
 import type { SiteCms } from "@/types/site-cms";
 
@@ -15,6 +16,26 @@ export async function getSiteCmsSettings() {
 export async function updateSiteCmsSettings(payload: SiteCms) {
   const response = await api.put<ApiResponse<SiteCms>>("/settings/cms", payload);
   return response.data.data;
+}
+
+export async function uploadCmsImage(file: File, purpose: "logo" | "favicon" | "hero" | "doctor") {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("purpose", purpose);
+
+  const token = useAuthStore.getState().accessToken;
+  const response = await fetch("/api/cms/upload", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: formData
+  });
+
+  const payload = (await response.json()) as ApiResponse<{ url: string }>;
+  if (!response.ok || !payload.data?.url) {
+    throw new Error(payload.message || "Upload gambar gagal.");
+  }
+
+  return payload.data.url;
 }
 
 export type AdminMonitoring = {
