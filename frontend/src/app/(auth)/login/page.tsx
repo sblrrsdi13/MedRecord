@@ -38,7 +38,7 @@ export default function LoginPage() {
           <div className="space-y-8">
             <div className="soft-panel inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-[#4a5657]">
               <Sparkles className="h-4 w-4 text-[#5f7974]" />
-              Smart Clinic Management 2026
+              Accurate Records, Better Care
             </div>
             <div className="max-w-3xl space-y-5">
               <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">

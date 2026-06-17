@@ -1,8 +1,8 @@
 import type { SiteCms } from "@/types/site-cms";
 
 export const defaultSiteCms: SiteCms = {
-  brandName: "KLINIK UNINDRA",
-  brandSubtitle: "Medical Portal",
+  brandName: "MedRecord",
+  brandSubtitle: "Accurate Records, Better Care",
   logoImageUrl: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=200&q=80",
   faviconUrl: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=64&q=80",
   themeMode: "sage",
@@ -50,10 +50,10 @@ export const defaultSiteCms: SiteCms = {
   informationPageTitle: "Informasi Klinik",
   informationPageContent: "Klinik menyediakan layanan pendaftaran, pemeriksaan, resep, farmasi, kasir, dan portal pasien terintegrasi.",
   announcementBanner: "Pendaftaran pasien baru dapat dilakukan melalui portal pasien.",
-  seoTitle: "Klinik Utama - Rekam Medis dan Portal Pasien",
-  seoDescription: "Website klinik modern untuk pendaftaran pasien, antrian, rekam medis, resep, farmasi, pembayaran, dan portal pasien.",
+  seoTitle: "MedRecord - Medical Record and Patient Portal",
+  seoDescription: "MedRecord adalah web app rekam medis modern untuk pendaftaran pasien, antrian, rekam medis, resep, farmasi, pembayaran, dan portal pasien.",
   seoKeywords: "klinik, rekam medis, portal pasien, antrian klinik",
-  footerDescription: "Sistem rekam medis klinik modern untuk pelayanan pasien, antrian, farmasi, pembayaran, dan laporan operasional.",
+  footerDescription: "MedRecord membantu klinik mengelola pelayanan pasien, antrian, farmasi, pembayaran, dan laporan operasional secara akurat.",
   footerAddress: "Jl. Sehat No. 10, Bandung, Jawa Barat",
   footerPhone: "+62 812-3456-7890",
   footerEmail: "info@klinikutama.local",

@@ -4,7 +4,8 @@ Dokumen ini menjelaskan prototype lengkap aplikasi Web Rekam Medis Klinik sebaga
 
 ## 1. Ringkasan Produk
 
-**Nama aplikasi:** Klinik Utama / Medical Portal  
+**Nama aplikasi:** MedRecord  
+**Slogan:** Accurate Records, Better Care  
 **Jenis aplikasi:** Web Rekam Medis Klinik modern  
 **Target pengguna:** Admin web, tenaga operasional klinik, dan pasien  
 **Platform:** Web responsive desktop dan mobile  

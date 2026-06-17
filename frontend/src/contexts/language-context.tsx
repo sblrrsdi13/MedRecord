@@ -53,7 +53,7 @@ export function useLanguage() {
 const translations: Record<Language, Record<string, string>> = {
   id: {
     // Topbar
-    "system.title": "Sistem Rekam Medis",
+    "system.title": "MedRecord",
     "system.subtitle": "Operasional klinik hari ini",
     "notification.title": "Notifikasi",
     "notification.unread": "belum dibaca",
@@ -177,12 +177,12 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.subscribe": "Subscribe",
     "footer.subscribe_short": "Info klinik terbaru",
-    "footer.subscribe_desc": "Dapatkan informasi layanan, edukasi kesehatan, dan pengumuman klinik langsung dari Klinik Utama.",
+    "footer.subscribe_desc": "Dapatkan informasi layanan, edukasi kesehatan, dan pengumuman klinik langsung dari MedRecord.",
     "footer.email_placeholder": "Tulis email",
     "footer.submit_email": "Kirim email",
-    "footer.brand": "Klinik Utama",
-    "footer.tagline": "Modern Healthcare Portal",
-    "footer.description": "Sistem rekam medis klinik modern untuk pelayanan pasien, antrian, farmasi, pembayaran, dan laporan operasional.",
+    "footer.brand": "MedRecord",
+    "footer.tagline": "Accurate Records, Better Care",
+    "footer.description": "MedRecord membantu klinik mengelola pelayanan pasien, antrian, farmasi, pembayaran, dan laporan operasional secara akurat.",
     "footer.about": "Tentang",
     "footer.company": "Klinik",
     "footer.announcements": "Pengumuman",
@@ -203,7 +203,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   en: {
     // Topbar
-    "system.title": "Medical Records System",
+    "system.title": "MedRecord",
     "system.subtitle": "Clinic Operations Today",
     "notification.title": "Notifications",
     "notification.unread": "unread",
@@ -327,11 +327,11 @@ const translations: Record<Language, Record<string, string>> = {
     // Footer
     "footer.subscribe": "Subscribe",
     "footer.subscribe_short": "Latest clinic info",
-    "footer.subscribe_desc": "Get service updates, health education, and clinic announcements directly from Klinik Utama.",
+    "footer.subscribe_desc": "Get service updates, health education, and clinic announcements directly from MedRecord.",
     "footer.email_placeholder": "Write email",
     "footer.submit_email": "Submit email",
-    "footer.brand": "Klinik Utama",
-    "footer.tagline": "Modern Healthcare Portal",
+    "footer.brand": "MedRecord",
+    "footer.tagline": "Accurate Records, Better Care",
     "footer.description": "A modern clinic medical record system for patient care, queues, pharmacy, payments, and operational reports.",
     "footer.about": "About",
     "footer.company": "Clinic",

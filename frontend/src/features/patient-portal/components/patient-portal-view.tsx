@@ -947,7 +947,7 @@ function printPatientRecord(patient: PatientPortalData["patient"], record: Patie
       }
     </style>
     <div class="record-sheet">
-      <div class="watermark">Klinik Utama</div>
+      <div class="watermark">MedRecord</div>
       <div class="sheet-content">
         <div class="rm-row">
           <span>No.RM</span>

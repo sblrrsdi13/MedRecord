@@ -57,7 +57,7 @@ function printInvoice(payment: PaymentRow) {
       <body>
         <div class="head">
           <div>
-            <div class="brand">Klinik Utama</div>
+            <div class="brand">MedRecord</div>
             <div class="muted">Invoice pembayaran layanan klinik</div>
           </div>
           <div style="text-align:right">

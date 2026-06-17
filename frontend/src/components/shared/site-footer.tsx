@@ -31,7 +31,7 @@ export function SiteFooter({ cms: providedCms }: { cms?: SiteCms }) {
             <p className="mt-1 text-xs text-[#7a827e]">{t("footer.subscribe_short", "Info klinik terbaru")}</p>
           </div>
           <p className="max-w-2xl text-sm leading-6 text-[#4a5657]">
-            {t("footer.subscribe_desc", "Dapatkan informasi layanan, edukasi kesehatan, dan pengumuman klinik langsung dari Klinik Utama.")}
+            {t("footer.subscribe_desc", "Dapatkan informasi layanan, edukasi kesehatan, dan pengumuman klinik langsung dari MedRecord.")}
           </p>
           <form action={`mailto:${cms.footerEmail}`} method="post" className="flex overflow-hidden rounded-lg border border-[#c7c1b5] bg-[#faf8ef]">
             <input

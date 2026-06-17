@@ -94,7 +94,7 @@ function printVisit(row: VisitRegistrationRow) {
       <body>
         <div class="header">
           <div>
-            <div class="brand">Klinik Utama</div>
+            <div class="brand">MedRecord</div>
             <div class="muted">Bukti pendaftaran kunjungan pasien</div>
           </div>
           <div style="text-align:right">
@@ -114,7 +114,7 @@ function printVisit(row: VisitRegistrationRow) {
           <div class="box"><div class="label">Nomor Antrian</div><div class="queue">${escapeHtml(row.queue?.queueNumber)}</div></div>
         </div>
         <div class="footer">
-          <div class="muted">Dicetak otomatis dari Sistem Rekam Medis Klinik.</div>
+          <div class="muted">Dicetak otomatis dari MedRecord.</div>
           <div class="sign">Petugas Pendaftaran</div>
         </div>
         <script>window.print(); window.onafterprint = () => window.close();</script>

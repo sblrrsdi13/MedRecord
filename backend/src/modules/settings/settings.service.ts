@@ -62,7 +62,7 @@ export async function getCms() {
 
 export function getLegacySettings() {
   return {
-    clinicName: "Klinik Utama",
+    clinicName: "MedRecord",
     timezone: "Asia/Jakarta",
     queueVoiceLanguage: "id-ID",
     medicalRecordPrefix: "RM"

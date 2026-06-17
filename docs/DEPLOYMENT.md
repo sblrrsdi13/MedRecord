@@ -1,4 +1,4 @@
-# Panduan Deploy Klinik Utama
+# Panduan Deploy MedRecord
 
 Target deploy gratis yang disarankan:
 
