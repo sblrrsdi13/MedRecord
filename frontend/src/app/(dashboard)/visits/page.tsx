@@ -1,4 +1,4 @@
-import { VisitRegistrationView } from "@/components/visits/visit-registration-view";
+import { VisitRegistrationView } from "@/features/visits/components/visit-registration-view";
 
 export default function VisitsPage() {
   return <VisitRegistrationView />;

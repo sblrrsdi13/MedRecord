@@ -1,4 +1,4 @@
-import { QueueBoard } from "@/components/queue/queue-board";
+import { QueueBoard } from "@/features/queues/components/queue-board";
 
 export default function QueuesPage() {
   return (

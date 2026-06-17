@@ -1,4 +1,4 @@
-import { PatientTable } from "@/components/patient/patient-table";
+import { PatientTable } from "@/features/patients/components/patient-table";
 import { PatientForm } from "@/components/forms/patient-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 import { UsersRound } from "lucide-react";

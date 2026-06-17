@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 
-const DashboardView = dynamic(() => import("@/components/dashboard/dashboard-view").then((mod) => mod.DashboardView), {
+const DashboardView = dynamic(() => import("@/features/dashboard/components/dashboard-view").then((mod) => mod.DashboardView), {
   loading: () => <div className="soft-panel rounded-2xl p-6 text-sm text-[#4a5657]">Memuat dashboard...</div>
 });
 

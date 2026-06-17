@@ -7,7 +7,7 @@ Aplikasi Web Rekam Medis Klinik modern berbasis Next.js, Express, Prisma, Postgr
 - `frontend`: Next.js App Router, TypeScript, Tailwind, shadcn-style components, Zustand, Axios, Socket.IO Client.
 - `backend`: Express TypeScript, Prisma ORM, JWT access token, refresh token, RBAC, Helmet, rate limit, Zod validation.
 - `docs`: analisa arsitektur dan API flow.
-- `uploads`: direktori upload aman.
+- `uploads`: placeholder/local development. Production upload menggunakan Vercel Blob.
 
 ## Jalankan Development
 
@@ -71,3 +71,4 @@ Login pasien:
 - [API Flow](docs/API_FLOW.md)
 - [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
 - [Database Setup](docs/DATABASE_SETUP.md)
+- [Uploads Policy](docs/UPLOADS_POLICY.md)
