@@ -1,7 +1,7 @@
 "use client";
 
 import { ModulePage } from "@/components/shared/module-page";
-import { MedicalRecordForm } from "@/components/forms/medical-record-form";
+import { MedicalRecordForm } from "@/features/medical-records/components/medical-record-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 import { Printer } from "lucide-react";
 import { escapeHtml, printDocument } from "@/utils/print";

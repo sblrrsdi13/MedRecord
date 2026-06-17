@@ -1,5 +1,5 @@
 import { ModulePage } from "@/components/shared/module-page";
-import { VitalSignForm } from "@/components/forms/vital-sign-form";
+import { VitalSignForm } from "@/features/vital-signs/components/vital-sign-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 
 export default function VitalSignsPage() {

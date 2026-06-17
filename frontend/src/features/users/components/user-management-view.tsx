@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RegisterUserForm } from "@/components/forms/register-user-form";
+import { RegisterUserForm } from "@/features/users/components/register-user-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 import { UserTable } from "@/components/shared/user-table";
 

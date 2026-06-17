@@ -1,5 +1,5 @@
 import { PatientTable } from "@/features/patients/components/patient-table";
-import { PatientForm } from "@/components/forms/patient-form";
+import { PatientForm } from "@/features/patients/components/patient-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 import { UsersRound } from "lucide-react";
 

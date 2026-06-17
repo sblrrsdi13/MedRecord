@@ -1,5 +1,5 @@
 import { ModulePage } from "@/components/shared/module-page";
-import { MedicineForm } from "@/components/forms/medicine-form";
+import { MedicineForm } from "@/features/medicines/components/medicine-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 
 export default function MedicinesPage() {

@@ -1,5 +1,5 @@
 import { ModulePage } from "@/components/shared/module-page";
-import { PolyclinicForm } from "@/components/forms/polyclinic-form";
+import { PolyclinicForm } from "@/features/polyclinics/components/polyclinic-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 
 export default function PolyclinicsPage() {

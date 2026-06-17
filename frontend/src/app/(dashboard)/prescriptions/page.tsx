@@ -1,7 +1,7 @@
 "use client";
 
 import { ModulePage } from "@/components/shared/module-page";
-import { PrescriptionForm } from "@/components/forms/prescription-form";
+import { PrescriptionForm } from "@/features/prescriptions/components/prescription-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 import { Printer } from "lucide-react";
 import { escapeHtml, printDocument } from "@/utils/print";

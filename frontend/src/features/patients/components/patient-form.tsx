@@ -12,7 +12,7 @@ import {
   sharedInputClassName,
   sharedSelectTriggerClassName,
   sharedTextareaClassName
-} from "./shared-form";
+} from "@/components/forms/shared-form";
 import { createPatient, updatePatient } from "@/features/patients/services/patient-service";
 import { getUsers, type UserRow } from "@/features/users/services/user-service";
 import { useAuthStore } from "@/store/auth-store";

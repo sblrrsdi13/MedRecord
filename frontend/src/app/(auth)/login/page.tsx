@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { LogIn, ShieldCheck, Sparkles, UserPlus, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoginForm } from "@/components/forms/login-form";
-import { PatientRegisterForm } from "@/components/forms/patient-register-form";
+import { LoginForm } from "@/features/auth/components/login-form";
+import { PatientRegisterForm } from "@/features/auth/components/patient-register-form";
 import { useSiteCms } from "@/hooks/use-site-cms";
 import { cn } from "@/lib/utils";
 

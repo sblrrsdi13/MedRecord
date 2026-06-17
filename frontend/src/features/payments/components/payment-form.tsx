@@ -9,7 +9,7 @@ import {
   sharedFormStyles,
   sharedInputClassName,
   sharedSelectTriggerClassName
-} from "./shared-form";
+} from "@/components/forms/shared-form";
 import { createPayment } from "@/features/payments/services/payment-service";
 import { getResource } from "@/features/resources/services/resource-service";
 import { emitResourceChanged } from "@/utils/resource-events";

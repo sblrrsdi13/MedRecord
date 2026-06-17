@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PatientForm } from "@/components/forms/patient-form";
+import { PatientForm } from "@/features/patients/components/patient-form";
 import { FormModalShell } from "@/components/shared/form-action-modal";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getPatients } from "@/features/patients/services/patient-service";

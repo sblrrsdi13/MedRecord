@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ClipboardList } from "lucide-react";
-import { VisitForm } from "@/components/forms/visit-form";
+import { VisitForm } from "@/features/visits/components/visit-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 import { VisitRegistrationTable } from "@/features/visits/components/visit-registration-table";
 
