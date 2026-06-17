@@ -11,7 +11,8 @@ import { ok } from "../../utils/api-response.js";
 
 export const adminSystemRoutes = Router();
 
-const backupDir = path.join(process.cwd(), "backups");
+const backupDir = path.join(process.cwd(), "storage", "backups");
+const uploadDir = path.join(process.cwd(), "storage", "uploads");
 const autoBackupKey = "auto_backup_policy";
 const securityPolicyKey = "security_policy";
 
@@ -311,7 +312,7 @@ adminSystemRoutes.get("/monitoring", async (_req, res) => {
     storage: {
       databaseBytes: Number(dbSize[0]?.size ?? 0),
       backupBytes: backupStorage,
-      uploadBytes: await getDirectorySize(path.join(process.cwd(), "..", "uploads"))
+      uploadBytes: await getDirectorySize(uploadDir)
     },
     resources: {
       cpuCores: os.cpus().length,

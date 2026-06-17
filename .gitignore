@@ -4,5 +4,7 @@ dist
 .env
 .env.local
 *.log
-uploads/*
-!uploads/.gitkeep
+backend/storage/uploads/*
+!backend/storage/uploads/.gitkeep
+backend/storage/backups/*
+!backend/storage/backups/.gitkeep

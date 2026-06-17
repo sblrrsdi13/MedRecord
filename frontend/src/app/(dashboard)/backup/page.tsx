@@ -152,7 +152,7 @@ export default function BackupPage() {
               <HardDrive className="h-5 w-5" />
               Riwayat Backup
             </CardTitle>
-            <CardDescription>Backup tersimpan di folder backend/backups.</CardDescription>
+            <CardDescription>Backup tersimpan di folder backend/storage/backups.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-hidden rounded-xl border">

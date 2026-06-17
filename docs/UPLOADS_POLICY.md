@@ -10,7 +10,7 @@ Project ini menggunakan Vercel Blob sebagai storage utama untuk file production.
 
 ## Local Development
 
-* Folder `uploads/` hanya dipakai sebagai placeholder/local development sementara.
+* Folder `backend/storage/uploads/` hanya dipakai sebagai placeholder/local development sementara.
 * Saat ini folder tersebut hanya berisi `.gitkeep` agar struktur folder tetap terlihat.
 * Jika perlu file temporary saat development, gunakan file kecil dan jangan commit file upload user.
 

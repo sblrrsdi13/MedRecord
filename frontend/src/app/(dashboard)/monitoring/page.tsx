@@ -70,7 +70,7 @@ export default function MonitoringPage() {
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <Metric icon={Database} label="Database" value={formatBytes(data.storage.databaseBytes)} helper="Estimasi ukuran PostgreSQL" />
-            <Metric icon={HardDrive} label="Backup Storage" value={formatBytes(data.storage.backupBytes)} helper="Folder backend/backups" />
+            <Metric icon={HardDrive} label="Backup Storage" value={formatBytes(data.storage.backupBytes)} helper="Folder backend/storage/backups" />
             <Metric icon={MemoryStick} label="RAM Aplikasi" value={formatBytes(data.resources.processRssBytes)} helper={`Heap ${formatBytes(data.resources.processHeapUsedBytes)} / ${formatBytes(data.resources.processHeapTotalBytes)} (${heapPercent}%)`} />
             <Metric icon={Cpu} label="Runtime Node" value={formatDuration(data.resources.uptimeSeconds)} helper={`Host ${data.resources.cpuCores} core, RAM host ${hostMemoryPercent}%`} />
           </div>

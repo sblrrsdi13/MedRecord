@@ -1,17 +1,16 @@
 ﻿# Project Structure
 
-Generated: 2026-06-17 03:53:47
+Generated: 2026-06-17 13:29:35
 
 Keterangan type:
 - `[dir]` folder
 - `[file:*]` file berdasarkan ekstensi
 - Folder build/cache besar seperti `node_modules`, `.next`, `dist`, `.git`, dan `coverage` tidak ditampilkan.
+- File runtime yang di-ignore seperti backup JSON lokal tidak ditampilkan.
 
 ```text
 AplikasiRekamMedis [dir]
 |-- backend [dir]
-|   |-- backups [dir]
-|   |   +-- manual-backup-2026-05-31T09-57-40-638Z.json [file:json]
 |   |-- prisma [dir]
 |   |   |-- migrations [dir]
 |   |   |   |-- 20260518225751_init [dir]
@@ -104,7 +103,6 @@ AplikasiRekamMedis [dir]
 |   |   |   |   +-- visit.routes.ts [file:ts]
 |   |   |   +-- vital-signs [dir]
 |   |   |       +-- vital-sign.routes.ts [file:ts]
-|   |   |-- repositories [dir]
 |   |   |-- services [dir]
 |   |   |   +-- visit-workflow.service.ts [file:ts]
 |   |   |-- socket [dir]
@@ -121,6 +119,11 @@ AplikasiRekamMedis [dir]
 |   |   |   +-- common.schema.ts [file:ts]
 |   |   |-- routes.ts [file:ts]
 |   |   +-- server.ts [file:ts]
+|   |-- storage [dir]
+|   |   |-- backups [dir]
+|   |   |   +-- .gitkeep [file:gitkeep]
+|   |   +-- uploads [dir]
+|   |       +-- .gitkeep [file:gitkeep]
 |   |-- .env [file:env]
 |   |-- .env.example [file:example]
 |   |-- nixpacks.toml [file:toml]
@@ -133,8 +136,10 @@ AplikasiRekamMedis [dir]
 |   |-- DATABASE_SETUP.md [file:md]
 |   |-- DEPLOYMENT.md [file:md]
 |   |-- IMPLEMENTATION_STATUS.md [file:md]
+|   |-- notes.md [file:md]
 |   |-- Optimize_Task.md [file:md]
 |   |-- PROFESSIONAL_HARDENING_PLAN.md [file:md]
+|   |-- PROJECT_STRUCTURE.md [file:md]
 |   |-- PROTOTYPE_LENGKAP.md [file:md]
 |   |-- SITEMAP.md [file:md]
 |   +-- UPLOADS_POLICY.md [file:md]
@@ -319,7 +324,6 @@ AplikasiRekamMedis [dir]
 |   |   |   +-- visit-service.ts [file:ts]
 |   |   |-- store [dir]
 |   |   |   +-- auth-store.ts [file:ts]
-|   |   |-- styles [dir]
 |   |   |-- types [dir]
 |   |   |   |-- api.ts [file:ts]
 |   |   |   +-- site-cms.ts [file:ts]
@@ -339,12 +343,9 @@ AplikasiRekamMedis [dir]
 |   |-- postcss.config.mjs [file:mjs]
 |   |-- tailwind.config.ts [file:ts]
 |   +-- tsconfig.json [file:json]
-|-- uploads [dir]
-|   +-- .gitkeep [file:gitkeep]
 |-- .env.example [file:example]
 |-- .gitignore [file:gitignore]
 |-- docker-compose.yml [file:yml]
 |-- LICENSE [file:no-ext]
-|-- notes.md [file:md]
 +-- README.md [file:md]
 ```
