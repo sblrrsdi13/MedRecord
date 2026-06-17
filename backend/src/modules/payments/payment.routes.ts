@@ -8,7 +8,7 @@ import { OPERATIONAL_ROLES } from "../../constants/roles.js";
 import { generateInvoiceNo } from "../../utils/numbering.js";
 import { writeAuditLog } from "../../middleware/audit.middleware.js";
 import { AppError } from "../../utils/errors.js";
-import { advanceVisitStatus } from "../../services/visit-workflow.service.js";
+import { advanceVisitStatus } from "../visits/visit.service.js";
 import { hasPaginationQuery, paginationMeta, parsePagination } from "../../utils/pagination.js";
 import { emitResourceEvent } from "../../socket/socket.js";
 

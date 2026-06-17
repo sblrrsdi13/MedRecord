@@ -9,7 +9,7 @@ import { writeAuditLog } from "../../middleware/audit.middleware.js";
 import { created, ok } from "../../utils/api-response.js";
 import { AppError } from "../../utils/errors.js";
 import { OPERATIONAL_ROLES } from "../../constants/roles.js";
-import { advanceVisitStatus } from "../../services/visit-workflow.service.js";
+import { advanceVisitStatus } from "../visits/visit.service.js";
 import { hasPaginationQuery, paginationMeta, parsePagination } from "../../utils/pagination.js";
 import { emitResourceEvent } from "../../socket/socket.js";
 
