@@ -5,7 +5,7 @@ import { AlertTriangle, Cpu, Database, HardDrive, ListChecks, MemoryStick, PlugZ
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSystemMonitoring, type MonitoringResponse } from "@/services/admin-system-service";
+import { getSystemMonitoring, type MonitoringResponse } from "@/features/admin-system/services/admin-system-service";
 
 function formatBytes(value: number) {
   if (!value) return "0 B";

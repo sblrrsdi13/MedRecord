@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Megaphone, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnnouncementCard } from "@/components/ui/announcement-card";
-import { createAnnouncement, deleteAnnouncement, getAnnouncements, updateAnnouncement, type AnnouncementItem } from "@/services/announcement-service";
+import { createAnnouncement, deleteAnnouncement, getAnnouncements, updateAnnouncement, type AnnouncementItem } from "@/features/announcements/services/announcement-service";
 import { FormModalShell } from "@/components/shared/form-action-modal";
 
 const categories: Array<{ value: AnnouncementItem["category"]; label: string }> = [

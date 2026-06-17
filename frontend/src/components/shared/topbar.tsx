@@ -8,7 +8,7 @@ import { NotificationCard, notificationSenderBadge } from "@/components/ui/notif
 import { MobileSidebar } from "@/components/shared/app-sidebar";
 import { LanguageToggle } from "@/components/shared/language-toggle";
 import { useLanguage } from "@/contexts/language-context";
-import { clearNotifications, deleteNotification, getNotifications, markNotificationRead, type NotificationItem } from "@/services/notification-service";
+import { clearNotifications, deleteNotification, getNotifications, markNotificationRead, type NotificationItem } from "@/features/notifications/services/notification-service";
 import { useAuthStore } from "@/store/auth-store";
 
 const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
 import { useAuthStore } from "@/store/auth-store";
 import type { RoleName } from "@/types/api";
-import { logout } from "@/services/auth-service";
+import { logout } from "@/features/auth/services/auth-service";
 import { useSiteCms } from "@/hooks/use-site-cms";
 
 type SidebarItem = {

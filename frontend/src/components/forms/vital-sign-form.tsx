@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Activity, ClipboardList, HeartPulse, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
-import { createVitalSign } from "@/services/clinical-service";
-import { getResource } from "@/services/resource-service";
+import { createVitalSign } from "@/features/clinical/services/clinical-service";
+import { getResource } from "@/features/resources/services/resource-service";
 import { emitResourceChanged } from "@/utils/resource-events";
 
 type VisitRow = { id: string; visitNo: string; patientId: string; patient?: { name: string } };

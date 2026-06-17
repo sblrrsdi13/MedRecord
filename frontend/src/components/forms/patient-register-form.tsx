@@ -11,7 +11,7 @@ import { DateChooser } from "@/components/ui/date-chooser";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { SelectChooser } from "@/components/ui/select-chooser";
-import { registerPatient } from "@/services/auth-service";
+import { registerPatient } from "@/features/auth/services/auth-service";
 import { patientRegisterSchema, type PatientRegisterInput } from "@/validations/auth.schema";
 
 export function PatientRegisterForm({ onLoginClick }: { onLoginClick?: () => void }) {

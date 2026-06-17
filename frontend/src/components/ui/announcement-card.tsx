@@ -3,7 +3,7 @@
 import { BookOpen, CalendarDays, Gift, Megaphone, TriangleAlert, UserRound, type LucideIcon } from "lucide-react";
 import type React from "react";
 import { cn } from "@/lib/utils";
-import type { AnnouncementItem } from "@/services/announcement-service";
+import type { AnnouncementItem } from "@/features/announcements/services/announcement-service";
 
 type AnnouncementCardProps = {
   item: AnnouncementItem;

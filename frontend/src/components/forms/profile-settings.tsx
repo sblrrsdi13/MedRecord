@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName } from "@/components/forms/shared-form";
-import { changePassword, getMe, updateProfile } from "@/services/auth-service";
+import { changePassword, getMe, updateProfile } from "@/features/auth/services/auth-service";
 import { useAuthStore } from "@/store/auth-store";
 import type { RoleName } from "@/types/api";
 

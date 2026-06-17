@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api } from "@/services/api";
 import type { ApiResponse } from "@/types/api";
 
 const MASTER_CACHE_TTL = 5 * 60 * 1000;

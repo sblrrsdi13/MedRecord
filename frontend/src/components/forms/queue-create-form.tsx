@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { ListOrdered, Save, UserRound } from "lucide-react";
-import { createQueue } from "@/services/queue-service";
-import { getPolyclinics, type Polyclinic } from "@/services/polyclinic-service";
-import { getPatients } from "@/services/patient-service";
+import { createQueue } from "@/features/queues/services/queue-service";
+import { getPolyclinics, type Polyclinic } from "@/features/polyclinics/services/polyclinic-service";
+import { getPatients } from "@/features/patients/services/patient-service";
 import type { Patient } from "@/types/api";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
 import { emitResourceChanged } from "@/utils/resource-events";

@@ -7,7 +7,7 @@ import { KeyRound, Save, ShieldCheck, UserRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormField, FormSection, sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
-import { registerUser } from "@/services/auth-service";
+import { registerUser } from "@/features/auth/services/auth-service";
 import { registerSchema, type RegisterInput } from "@/validations/auth.schema";
 import { emitResourceChanged } from "@/utils/resource-events";
 

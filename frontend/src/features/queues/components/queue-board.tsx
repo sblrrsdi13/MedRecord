@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QueueCreateForm } from "@/components/forms/queue-create-form";
 import { FormActionModal } from "@/components/shared/form-action-modal";
 import { useQueueSocket } from "@/hooks/use-queue-socket";
-import { callQueue, cancelQueue, completeQueue, getQueues, recallQueue, skipQueue } from "@/services/queue-service";
+import { callQueue, cancelQueue, completeQueue, getQueues, recallQueue, skipQueue } from "@/features/queues/services/queue-service";
 import type { QueueItem, QueueStatus } from "@/types/api";
 
 const statusVariant: Record<QueueStatus, "secondary" | "success" | "warning" | "destructive" | "default"> = {

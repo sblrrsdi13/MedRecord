@@ -5,8 +5,8 @@ import { Bell, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getResource } from "@/services/resource-service";
-import { sendNotification } from "@/services/notification-service";
+import { getResource } from "@/features/resources/services/resource-service";
+import { sendNotification } from "@/features/notifications/services/notification-service";
 import type { RoleName } from "@/types/api";
 
 type UserRow = {

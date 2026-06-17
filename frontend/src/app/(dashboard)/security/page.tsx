@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { KeyRound, LockKeyhole, Network, Save, ShieldCheck, Timer, UserCheck, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSecurityPolicy, updateSecurityPolicy, type SecurityPolicy } from "@/services/admin-system-service";
+import { getSecurityPolicy, updateSecurityPolicy, type SecurityPolicy } from "@/features/admin-system/services/admin-system-service";
 
 const defaultPolicy: SecurityPolicy = {
   minPasswordLength: 8,

@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api } from "@/services/api";
 import type { ApiResponse, QueueItem } from "@/types/api";
 
 type Paginated<T> = {

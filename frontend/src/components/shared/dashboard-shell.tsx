@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { Topbar } from "@/components/shared/topbar";
-import { getMe, refreshSession } from "@/services/auth-service";
+import { getMe, refreshSession } from "@/features/auth/services/auth-service";
 import { useAuthStore } from "@/store/auth-store";
 
 const ADMIN_ALLOWED_ROUTES = ["/dashboard", "/settings", "/announcements", "/notifications", "/users", "/register", "/doctors", "/polyclinics", "/backup", "/monitoring", "/reports", "/security", "/audit-logs", "/profile"];

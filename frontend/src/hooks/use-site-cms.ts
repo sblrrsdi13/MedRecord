@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { defaultSiteCms } from "@/constants/default-site-cms";
-import { getPublicSiteSettings } from "@/services/site-settings-service";
+import { getPublicSiteSettings } from "@/features/settings/services/site-settings-service";
 import type { SiteCms } from "@/types/site-cms";
 
 const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";

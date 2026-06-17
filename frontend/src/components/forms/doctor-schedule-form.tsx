@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { Clock, Users, Save, Stethoscope, Hospital, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createDoctorSchedule } from "@/services/doctor-service";
-import { getPolyclinics, type Polyclinic } from "@/services/polyclinic-service";
-import { getCachedResource } from "@/services/resource-service";
+import { createDoctorSchedule } from "@/features/doctors/services/doctor-service";
+import { getPolyclinics, type Polyclinic } from "@/features/polyclinics/services/polyclinic-service";
+import { getCachedResource } from "@/features/resources/services/resource-service";
 import { sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
 import { emitResourceChanged } from "@/utils/resource-events";
 

@@ -13,8 +13,8 @@ import {
   sharedSelectTriggerClassName,
   sharedTextareaClassName
 } from "./shared-form";
-import { createPatient, updatePatient } from "@/services/patient-service";
-import { getUsers, type UserRow } from "@/services/user-service";
+import { createPatient, updatePatient } from "@/features/patients/services/patient-service";
+import { getUsers, type UserRow } from "@/features/users/services/user-service";
 import { useAuthStore } from "@/store/auth-store";
 import type { Patient, RoleName } from "@/types/api";
 import { emitResourceChanged } from "@/utils/resource-events";

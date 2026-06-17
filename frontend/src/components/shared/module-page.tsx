@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FormModalShell } from "@/components/shared/form-action-modal";
-import { deleteResource, getResource, updateResource } from "@/services/resource-service";
+import { deleteResource, getResource, updateResource } from "@/features/resources/services/resource-service";
 import type { PaginatedResponse } from "@/types/api";
 import { normalizeResourceName, RESOURCE_CHANGED_EVENT } from "@/utils/resource-events";
 import { useResourceSocket } from "@/hooks/use-resource-socket";

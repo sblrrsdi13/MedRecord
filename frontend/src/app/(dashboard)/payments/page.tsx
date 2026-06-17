@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Banknote, CreditCard, Printer, ReceiptText, RefreshCw, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPayments, getReadyPayments, processReadyPayment, type PaymentRow, type ReadyPaymentVisit } from "@/services/payment-service";
+import { getPayments, getReadyPayments, processReadyPayment, type PaymentRow, type ReadyPaymentVisit } from "@/features/payments/services/payment-service";
 import { useResourceSocket } from "@/hooks/use-resource-socket";
 import { RESOURCE_CHANGED_EVENT } from "@/utils/resource-events";
 

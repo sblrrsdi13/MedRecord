@@ -1,6 +1,6 @@
-import { api } from "./api";
+import { api } from "@/services/api";
 import type { ApiResponse } from "@/types/api";
-import { getCachedResource, invalidateCachedResource } from "@/services/resource-service";
+import { getCachedResource, invalidateCachedResource } from "@/features/resources/services/resource-service";
 
 export type Polyclinic = {
   id: string;

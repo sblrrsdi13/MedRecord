@@ -2,7 +2,7 @@
 
 import { AlertTriangle, BellRing, CheckCircle2, Info, Trash2, UserRound, XCircle, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { NotificationItem } from "@/services/notification-service";
+import type { NotificationItem } from "@/features/notifications/services/notification-service";
 import type { RoleName } from "@/types/api";
 
 type NotificationCardProps = {

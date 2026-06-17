@@ -6,7 +6,7 @@ import { AlertTriangle, Eye, Save, Settings, type LucideIcon } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { defaultSiteCms } from "@/constants/default-site-cms";
-import { getSiteCmsSettings, updateSiteCmsSettings, uploadCmsImage } from "@/services/site-settings-service";
+import { getSiteCmsSettings, updateSiteCmsSettings, uploadCmsImage } from "@/features/settings/services/site-settings-service";
 import type { SiteCms } from "@/types/site-cms";
 
 type CmsArrayKey = "navLinks" | "departments" | "services" | "socialLinks";

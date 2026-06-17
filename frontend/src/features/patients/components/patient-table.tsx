@@ -9,8 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PatientForm } from "@/components/forms/patient-form";
 import { FormModalShell } from "@/components/shared/form-action-modal";
 import { useDebounce } from "@/hooks/use-debounce";
-import { getPatients } from "@/services/patient-service";
-import { deleteResource } from "@/services/resource-service";
+import { getPatients } from "@/features/patients/services/patient-service";
+import { deleteResource } from "@/features/resources/services/resource-service";
 import type { Patient } from "@/types/api";
 
 export function PatientTable({ actionSlot }: { actionSlot?: ReactNode }) {

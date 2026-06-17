@@ -10,8 +10,8 @@ import {
   sharedInputClassName,
   sharedSelectTriggerClassName
 } from "./shared-form";
-import { createPayment } from "@/services/payment-service";
-import { getResource } from "@/services/resource-service";
+import { createPayment } from "@/features/payments/services/payment-service";
+import { getResource } from "@/features/resources/services/resource-service";
 import { emitResourceChanged } from "@/utils/resource-events";
 
 type VisitRow = { id: string; visitNo: string; patient?: { name: string } };

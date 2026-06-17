@@ -5,7 +5,7 @@ import { ArchiveRestore, Clock, DatabaseBackup, Download, HardDrive, RefreshCw, 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createManualBackup, downloadBackup, getBackups, restoreBackup, updateAutoBackupPolicy, type BackupItem, type BackupPolicy } from "@/services/admin-system-service";
+import { createManualBackup, downloadBackup, getBackups, restoreBackup, updateAutoBackupPolicy, type BackupItem, type BackupPolicy } from "@/features/admin-system/services/admin-system-service";
 
 function formatBytes(value: number) {
   if (!value) return "0 B";

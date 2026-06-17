@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { ClipboardList, Pill, Plus, Save, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
-import { createPrescription } from "@/services/prescription-service";
-import { getResource } from "@/services/resource-service";
-import type { Medicine } from "@/services/medicine-service";
+import { createPrescription } from "@/features/prescriptions/services/prescription-service";
+import { getResource } from "@/features/resources/services/resource-service";
+import type { Medicine } from "@/features/medicines/services/medicine-service";
 import { emitResourceChanged } from "@/utils/resource-events";
 
 type MedicalRecordRow = { id: string; patient?: { name: string }; diagnosis: string };

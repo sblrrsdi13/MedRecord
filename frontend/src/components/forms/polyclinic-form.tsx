@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { BadgeDollarSign, Building2, ListOrdered, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { createPolyclinic } from "@/services/polyclinic-service";
+import { createPolyclinic } from "@/features/polyclinics/services/polyclinic-service";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName } from "@/components/forms/shared-form";
 import { emitResourceChanged } from "@/utils/resource-events";
 

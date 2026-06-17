@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api } from "@/services/api";
 import { useAuthStore } from "@/store/auth-store";
 import type { ApiResponse, UserSession } from "@/types/api";
 import type { PatientRegisterInput, RegisterInput } from "@/validations/auth.schema";

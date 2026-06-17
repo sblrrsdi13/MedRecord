@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { ClipboardList, Save, Stethoscope } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FormField, FormMessage, FormSection, sharedFormStyles, sharedInputClassName, sharedSelectTriggerClassName } from "@/components/forms/shared-form";
-import { getPatients } from "@/services/patient-service";
-import { getPolyclinics, type Polyclinic } from "@/services/polyclinic-service";
-import { createVisit } from "@/services/visit-service";
+import { getPatients } from "@/features/patients/services/patient-service";
+import { getPolyclinics, type Polyclinic } from "@/features/polyclinics/services/polyclinic-service";
+import { createVisit } from "@/features/visits/services/visit-service";
 import type { Patient } from "@/types/api";
 import { emitResourceChanged } from "@/utils/resource-events";
 

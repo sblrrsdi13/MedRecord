@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ClipboardList, Package, Save, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createMedicine } from "@/services/medicine-service";
+import { createMedicine } from "@/features/medicines/services/medicine-service";
 import { sharedFormStyles, sharedInputClassName } from "@/components/forms/shared-form";
 import { emitResourceChanged } from "@/utils/resource-events";
 

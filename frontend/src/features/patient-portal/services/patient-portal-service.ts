@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api } from "@/services/api";
 import type { ApiResponse, Patient, QueueItem } from "@/types/api";
 
 export type PortalVisit = {

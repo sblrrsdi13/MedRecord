@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { deleteUserPermanent, getUsers, type UserRow } from "@/services/user-service";
-import { deleteResource, updateResource } from "@/services/resource-service";
+import { deleteUserPermanent, getUsers, type UserRow } from "@/features/users/services/user-service";
+import { deleteResource, updateResource } from "@/features/resources/services/resource-service";
 import { FormModalShell } from "@/components/shared/form-action-modal";
 import type { PaginatedResponse } from "@/types/api";
 
