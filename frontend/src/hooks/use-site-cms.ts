@@ -32,8 +32,16 @@ function mergeCms(settings: Partial<SiteCms>) {
     next.brandSubtitle = "Accurate Records, Better Care";
   }
 
-  if (next.footerEmail === "info@medrecord.local") {
+  if (next.footerEmail === "info@klinikutama.local") {
     next.footerEmail = "info@medrecord.local";
+  }
+
+  if (/klinik utama/i.test(next.seoTitle)) {
+    next.seoTitle = next.seoTitle.replace(/klinik utama/gi, "MedRecord");
+  }
+
+  if (/klinik utama/i.test(next.seoDescription)) {
+    next.seoDescription = next.seoDescription.replace(/klinik utama/gi, "MedRecord");
   }
 
   next.socialLinks = next.socialLinks.map((link) => ({
@@ -188,6 +196,5 @@ export function useSiteCms(enabled = true, realtime = true, initialCms?: Partial
 
   return cms;
 }
-
 
 

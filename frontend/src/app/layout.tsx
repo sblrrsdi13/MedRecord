@@ -6,14 +6,64 @@ import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const cms = await getServerSiteCms();
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  const title = cms.seoTitle || cms.brandName;
+  const description = cms.seoDescription || cms.brandSubtitle;
+  const ogImage = cms.heroImageUrl || cms.logoImageUrl;
 
   return {
-    title: cms.seoTitle || cms.brandName,
-    description: cms.seoDescription,
+    metadataBase: new URL(siteUrl),
+    title,
+    description,
     keywords: cms.seoKeywords,
+    applicationName: cms.brandName,
+    authors: [{ name: cms.brandName }],
+    creator: cms.brandName,
+    publisher: cms.brandName,
+    alternates: {
+      canonical: "/"
+    },
     icons: {
-      icon:"/IconTitle.svg"
-    }
+      icon: "/IconTitle.svg",
+      shortcut: "/IconTitle.svg",
+      apple: "/IconTitle.svg"
+    },
+    openGraph: {
+      title,
+      description,
+      url: "/",
+      siteName: cms.brandName,
+      locale: "id_ID",
+      type: "website",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: cms.heroImageAlt || cms.brandName
+        }
+      ]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage]
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1
+      }
+    },
+    category: "healthcare"
   };
 }
 
