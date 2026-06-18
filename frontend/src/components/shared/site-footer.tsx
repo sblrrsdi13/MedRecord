@@ -29,7 +29,10 @@ export function SiteFooter({ cms: providedCms }: { cms?: SiteCms }) {
             <p className="mt-1 text-xs text-[#7a827e]">{cms.footerSubscribeSubtitle}</p>
           </div>
           <p className="max-w-2xl text-sm leading-6 text-[#4a5657]">{cms.footerSubscribeDescription}</p>
-          <form action={`mailto:${cms.footerEmail}`} method="post" className="flex overflow-hidden rounded-lg border border-[#c7c1b5] bg-[#faf8ef]">
+          <form
+            onSubmit={(event) => event.preventDefault()}
+            className="flex overflow-hidden rounded-lg border border-[#c7c1b5] bg-[#faf8ef]"
+          >
             <input
               type="email"
               name="email"
@@ -93,10 +96,10 @@ export function SiteFooter({ cms: providedCms }: { cms?: SiteCms }) {
                 <Phone className="h-4 w-4 text-[#5f7974]" />
                 {cms.footerPhone}
               </a>
-              <a href={`mailto:${cms.footerEmail}`} className="flex items-center gap-2 transition hover:text-[#5f7974]">
+              <span className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-[#5f7974]" />
                 {cms.footerEmail}
-              </a>
+              </span>
               <div className="flex gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#5f7974]" />
                 <span>{cms.footerAddress}</span>
