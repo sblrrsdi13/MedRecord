@@ -14,9 +14,7 @@ const cspDirectives = [
   "connect-src 'self' http://localhost:4000 ws://localhost:4000 https://*.railway.app wss://*.railway.app https://vitals.vercel-insights.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  "upgrade-insecure-requests",
-  "trusted-types nextjs default",
-  "require-trusted-types-for 'script'"
+  "upgrade-insecure-requests"
 ].join("; ");
 
 const nextConfig: NextConfig = {
