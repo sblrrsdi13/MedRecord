@@ -75,6 +75,30 @@ export async function listAnnouncements(role: RoleName) {
   return rows.map(mapRow);
 }
 
+export async function listPublicAnnouncements() {
+  await ensureAnnouncementTable();
+  const rows = await prisma.$queryRaw<AnnouncementRow[]>`
+    select
+      a.id,
+      a.title,
+      a.content,
+      a.category,
+      a.is_active as "isActive",
+      a.created_by as "createdBy",
+      u.name as "authorName",
+      u.email as "authorEmail",
+      a.created_at as "createdAt",
+      a.updated_at as "updatedAt"
+    from portal_announcements a
+    left join users u on u.id = a.created_by
+    where a.is_active = true
+    order by a.created_at desc
+    limit 12
+  `;
+
+  return rows.map(mapRow);
+}
+
 export async function createAnnouncement(payload: AnnouncementPayload, userId: string) {
   await ensureAnnouncementTable();
   const id = randomUUID();

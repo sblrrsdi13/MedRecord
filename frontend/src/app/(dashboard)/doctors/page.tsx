@@ -28,7 +28,6 @@ export default function DoctorsPage() {
           { key: "specialization", label: "Spesialisasi" },
           { key: "polyclinic.name", label: "Poli" }
         ]}
-        notes={["Dokter dibuat dari user dengan role DOCTOR.", "Data dokter dan relasi poli dikelola oleh Admin sebagai data master.", "Operasional hanya memakai data dokter ini saat membuat kunjungan atau rekam medis."]}
       />
     </div>
   );

@@ -3,6 +3,11 @@ export type SiteLink = {
   href: string;
 };
 
+export type SiteStat = {
+  value: string;
+  label: string;
+};
+
 export type SiteDepartment = {
   title: string;
   desc: string;
@@ -21,6 +26,11 @@ export type SiteSocialLink = {
   icon: string;
 };
 
+export type SiteFooterColumn = {
+  title: string;
+  links: SiteLink[];
+};
+
 export type SiteCms = {
   brandName: string;
   brandSubtitle: string;
@@ -28,6 +38,7 @@ export type SiteCms = {
   faviconUrl: string;
   themeMode: "sage" | "warm" | "contrast";
   heroImageUrl: string;
+  heroImageAlt: string;
   heroBadge: string;
   heroTitle: string;
   heroDescription: string;
@@ -46,8 +57,15 @@ export type SiteCms = {
   doctorSectionTitle: string;
   doctorSectionDescription: string;
   doctorImageUrl: string;
+  doctorImageAlt: string;
+  landingStats: SiteStat[];
+  informationEyebrow: string;
   ctaEyebrow: string;
   ctaTitle: string;
+  ctaPrimaryLabel: string;
+  ctaPrimaryHref: string;
+  ctaSecondaryLabel: string;
+  ctaSecondaryHref: string;
   informationPageTitle: string;
   informationPageContent: string;
   announcementBanner: string;
@@ -58,6 +76,7 @@ export type SiteCms = {
   footerAddress: string;
   footerPhone: string;
   footerEmail: string;
+  footerContactTitle: string;
   patientCodePrefix: string;
   patientCodeSequenceLength: number;
   visitPrefix: string;
@@ -66,6 +85,14 @@ export type SiteCms = {
   invoiceSequenceLength: number;
   socialLinks: SiteSocialLink[];
   navLinks: SiteLink[];
+  footerSubscribeTitle: string;
+  footerSubscribeSubtitle: string;
+  footerSubscribeDescription: string;
+  footerEmailPlaceholder: string;
+  footerSubmitLabel: string;
+  footerColumns: SiteFooterColumn[];
+  footerBottomLinks: SiteLink[];
+  footerCopyrightText: string;
 };
 
 

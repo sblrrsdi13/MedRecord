@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { defaultSiteCms } from "@/constants/default-site-cms";
 import { getPublicSiteSettings } from "@/features/settings/services/site-settings-service";
 import type { SiteCms } from "@/types/site-cms";
@@ -121,10 +121,15 @@ function stopCmsRealtime() {
 }
 
 export function useSiteCms(enabled = true, realtime = true, initialCms?: Partial<SiteCms>) {
+  const initialSnapshot = useMemo(
+    () => (initialCms ? mergeCms(initialCms) : currentCms),
+    [initialCms]
+  );
+
   const cms = useSyncExternalStore(
     subscribe,
     getSnapshot,
-    () => (initialCms ? mergeCms(initialCms) : currentCms)
+    () => initialSnapshot
   );
 
   useEffect(() => {

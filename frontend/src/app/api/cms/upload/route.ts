@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 const maxImageSize = 2 * 1024 * 1024;
-const allowedPurposes = new Set(["logo", "favicon", "hero", "doctor"]);
+const allowedPurposes = new Set(["logo", "favicon", "hero", "doctor", "service"]);
 const allowedMimeTypes = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
 
 function extensionFromType(type: string) {

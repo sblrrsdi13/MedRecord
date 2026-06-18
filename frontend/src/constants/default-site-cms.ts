@@ -7,6 +7,7 @@ export const defaultSiteCms: SiteCms = {
   faviconUrl: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=64&q=80",
   themeMode: "sage",
   heroImageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=2200&q=88",
+  heroImageAlt: "Dokter dan pasien di ruang klinik modern",
   heroBadge: "Aman, cepat, terintegrasi",
   heroTitle: "Your Health, Our Priority",
   heroDescription: "Platform rekam medis modern untuk klinik: pendaftaran pasien, antrian realtime, rekam medis, resep, farmasi, kasir, dan portal pasien.",
@@ -45,8 +46,19 @@ export const defaultSiteCms: SiteCms = {
   doctorSectionTitle: "Dibangun untuk pasien dan operasional klinik",
   doctorSectionDescription: "Admin mengatur sistem, tim klinik menjalankan pendaftaran sampai pembayaran, dan pasien mendapat portal pribadi untuk melihat riwayat medis serta invoice.",
   doctorImageUrl: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=900&q=85",
+  doctorImageAlt: "Tim dokter klinik sedang bersiap melayani pasien",
+  landingStats: [
+    { value: "24/7", label: "Portal aktif" },
+    { value: "6+", label: "Role operasional" },
+    { value: "Realtime", label: "Antrian & notifikasi" }
+  ],
+  informationEyebrow: "Informasi",
   ctaEyebrow: "Mulai sekarang",
   ctaTitle: "Masuk atau daftar sebagai pasien baru.",
+  ctaPrimaryLabel: "Login",
+  ctaPrimaryHref: "/login",
+  ctaSecondaryLabel: "Register Pasien",
+  ctaSecondaryHref: "/login/register",
   informationPageTitle: "Informasi Klinik",
   informationPageContent: "Klinik menyediakan layanan pendaftaran, pemeriksaan, resep, farmasi, kasir, dan portal pasien terintegrasi.",
   announcementBanner: "Pendaftaran pasien baru dapat dilakukan melalui portal pasien.",
@@ -57,6 +69,7 @@ export const defaultSiteCms: SiteCms = {
   footerAddress: "Jl. Sehat No. 10, Bandung, Jawa Barat",
   footerPhone: "+62 812-3456-7890",
   footerEmail: "info@klinikutama.local",
+  footerContactTitle: "Kontak",
   patientCodePrefix: "PS",
   patientCodeSequenceLength: 4,
   visitPrefix: "V",
@@ -76,5 +89,42 @@ export const defaultSiteCms: SiteCms = {
     { label: "Departments", href: "#departments" },
     { label: "Doctors", href: "#doctors" },
     { label: "Contact", href: "#contact" }
-  ]
+  ],
+  footerSubscribeTitle: "Subscribe",
+  footerSubscribeSubtitle: "Info klinik terbaru",
+  footerSubscribeDescription: "Dapatkan informasi layanan, edukasi kesehatan, dan pengumuman klinik langsung dari MedRecord.",
+  footerEmailPlaceholder: "Tulis email",
+  footerSubmitLabel: "Kirim email",
+  footerColumns: [
+    {
+      title: "Tentang",
+      links: [
+        { label: "Klinik", href: "/#home" },
+        { label: "Departemen", href: "/#departments" },
+        { label: "Kontak", href: "/#contact" }
+      ]
+    },
+    {
+      title: "Menu",
+      links: [
+        { label: "Beranda", href: "/" },
+        { label: "Login", href: "/login" },
+        { label: "Daftar Pasien", href: "/login/register" }
+      ]
+    },
+    {
+      title: "Layanan",
+      links: [
+        { label: "Informasi Layanan", href: "/#services" },
+        { label: "Portal Pasien", href: "/patient-portal" },
+        { label: "Pendaftaran Pasien", href: "/login/register" }
+      ]
+    }
+  ],
+  footerBottomLinks: [
+    { label: "Privacy Policy", href: "/#contact" },
+    { label: "Layanan", href: "/#services" },
+    { label: "Informasi Klinik", href: "/#departments" }
+  ],
+  footerCopyrightText: "All rights reserved."
 };

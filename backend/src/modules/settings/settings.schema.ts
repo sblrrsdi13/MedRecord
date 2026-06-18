@@ -5,6 +5,11 @@ const linkSchema = z.object({
   href: z.string().min(1).max(500)
 });
 
+const statSchema = z.object({
+  value: z.string().min(1).max(40),
+  label: z.string().min(1).max(120)
+});
+
 const departmentSchema = z.object({
   title: z.string().min(1).max(120),
   desc: z.string().min(1).max(280),
@@ -28,6 +33,11 @@ const socialSchema = z.object({
   icon: z.string().min(1).max(40).default("Instagram")
 });
 
+const footerColumnSchema = z.object({
+  title: z.string().min(1).max(80),
+  links: z.array(linkSchema).min(1).max(8)
+});
+
 export const cmsSchema = z.object({
   brandName: z.string().min(1).max(120),
   brandSubtitle: z.string().min(1).max(120),
@@ -36,6 +46,7 @@ export const cmsSchema = z.object({
   faviconUrl: imageSourceSchema,
   themeMode: z.enum(["sage", "warm", "contrast"]).default("sage"),
   heroImageUrl: imageSourceSchema,
+  heroImageAlt: z.string().min(1).max(180).default("Dokter dan pasien di ruang klinik modern"),
   heroBadge: z.string().min(1).max(120),
   heroTitle: z.string().min(1).max(160),
   heroDescription: z.string().min(1).max(500),
@@ -54,8 +65,19 @@ export const cmsSchema = z.object({
   doctorSectionTitle: z.string().min(1).max(160),
   doctorSectionDescription: z.string().min(1).max(500),
   doctorImageUrl: imageSourceSchema,
+  doctorImageAlt: z.string().min(1).max(180).default("Tim dokter klinik sedang bersiap melayani pasien"),
+  landingStats: z.array(statSchema).min(1).max(6).default([
+    { value: "24/7", label: "Portal aktif" },
+    { value: "6+", label: "Role operasional" },
+    { value: "Realtime", label: "Antrian & notifikasi" }
+  ]),
+  informationEyebrow: z.string().min(1).max(80).default("Informasi"),
   ctaEyebrow: z.string().min(1).max(80),
   ctaTitle: z.string().min(1).max(160),
+  ctaPrimaryLabel: z.string().min(1).max(80).default("Login"),
+  ctaPrimaryHref: z.string().min(1).max(500).default("/login"),
+  ctaSecondaryLabel: z.string().min(1).max(80).default("Register Pasien"),
+  ctaSecondaryHref: z.string().min(1).max(500).default("/login/register"),
   informationPageTitle: z.string().min(1).max(160),
   informationPageContent: z.string().min(1).max(1200),
   announcementBanner: z.string().min(1).max(250),
@@ -66,6 +88,7 @@ export const cmsSchema = z.object({
   footerAddress: z.string().min(1).max(250),
   footerPhone: z.string().min(1).max(80),
   footerEmail: z.string().email().max(160),
+  footerContactTitle: z.string().min(1).max(80).default("Kontak"),
   patientCodePrefix: z.string().min(1).max(12).regex(/^[A-Z0-9]+$/),
   patientCodeSequenceLength: z.coerce.number().int().min(3).max(10),
   visitPrefix: z.string().min(1).max(12).regex(/^[A-Z0-9]+$/),
@@ -73,7 +96,44 @@ export const cmsSchema = z.object({
   invoicePrefix: z.string().min(1).max(12).regex(/^[A-Z0-9]+$/),
   invoiceSequenceLength: z.coerce.number().int().min(3).max(10),
   socialLinks: z.array(socialSchema).min(1).max(8),
-  navLinks: z.array(linkSchema).min(1).max(8)
+  navLinks: z.array(linkSchema).min(1).max(8),
+  footerSubscribeTitle: z.string().min(1).max(80).default("Subscribe"),
+  footerSubscribeSubtitle: z.string().min(1).max(120).default("Info klinik terbaru"),
+  footerSubscribeDescription: z.string().min(1).max(300).default("Dapatkan informasi layanan, edukasi kesehatan, dan pengumuman klinik langsung dari MedRecord."),
+  footerEmailPlaceholder: z.string().min(1).max(80).default("Tulis email"),
+  footerSubmitLabel: z.string().min(1).max(80).default("Kirim email"),
+  footerColumns: z.array(footerColumnSchema).min(1).max(4).default([
+    {
+      title: "Tentang",
+      links: [
+        { label: "Klinik", href: "/#home" },
+        { label: "Departemen", href: "/#departments" },
+        { label: "Kontak", href: "/#contact" }
+      ]
+    },
+    {
+      title: "Menu",
+      links: [
+        { label: "Beranda", href: "/" },
+        { label: "Login", href: "/login" },
+        { label: "Daftar Pasien", href: "/login/register" }
+      ]
+    },
+    {
+      title: "Layanan",
+      links: [
+        { label: "Informasi Layanan", href: "/#services" },
+        { label: "Portal Pasien", href: "/patient-portal" },
+        { label: "Pendaftaran Pasien", href: "/login/register" }
+      ]
+    }
+  ]),
+  footerBottomLinks: z.array(linkSchema).min(1).max(6).default([
+    { label: "Privacy Policy", href: "/#contact" },
+    { label: "Layanan", href: "/#services" },
+    { label: "Informasi Klinik", href: "/#departments" }
+  ]),
+  footerCopyrightText: z.string().min(1).max(120).default("All rights reserved.")
 });
 
 export type SiteCms = z.infer<typeof cmsSchema>;
@@ -86,6 +146,7 @@ export const defaultCms: SiteCms = {
   faviconUrl: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=64&q=80",
   themeMode: "sage",
   heroImageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=2200&q=88",
+  heroImageAlt: "Dokter dan pasien di ruang klinik modern",
   heroBadge: "Aman, cepat, terintegrasi",
   heroTitle: "Your Health, Our Priority",
   heroDescription: "Platform rekam medis modern untuk klinik: pendaftaran pasien, antrian realtime, rekam medis, resep, farmasi, kasir, dan portal pasien.",
@@ -124,8 +185,19 @@ export const defaultCms: SiteCms = {
   doctorSectionTitle: "Dibangun untuk pasien dan operasional klinik",
   doctorSectionDescription: "Admin mengatur sistem, tim klinik menjalankan pendaftaran sampai pembayaran, dan pasien mendapat portal pribadi untuk melihat riwayat medis serta invoice.",
   doctorImageUrl: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=900&q=85",
+  doctorImageAlt: "Tim dokter klinik sedang bersiap melayani pasien",
+  landingStats: [
+    { value: "24/7", label: "Portal aktif" },
+    { value: "6+", label: "Role operasional" },
+    { value: "Realtime", label: "Antrian & notifikasi" }
+  ],
+  informationEyebrow: "Informasi",
   ctaEyebrow: "Mulai sekarang",
   ctaTitle: "Masuk atau daftar sebagai pasien baru.",
+  ctaPrimaryLabel: "Login",
+  ctaPrimaryHref: "/login",
+  ctaSecondaryLabel: "Register Pasien",
+  ctaSecondaryHref: "/login/register",
   informationPageTitle: "Informasi Klinik",
   informationPageContent: "Klinik menyediakan layanan pendaftaran, pemeriksaan, resep, farmasi, kasir, dan portal pasien terintegrasi.",
   announcementBanner: "Pendaftaran pasien baru dapat dilakukan melalui portal pasien.",
@@ -136,6 +208,7 @@ export const defaultCms: SiteCms = {
   footerAddress: "Jl. Sehat No. 10, Bandung, Jawa Barat",
   footerPhone: "+62 812-3456-7890",
   footerEmail: "info@klinikutama.local",
+  footerContactTitle: "Kontak",
   patientCodePrefix: "PS",
   patientCodeSequenceLength: 4,
   visitPrefix: "V",
@@ -155,5 +228,42 @@ export const defaultCms: SiteCms = {
     { label: "Departments", href: "#departments" },
     { label: "Doctors", href: "#doctors" },
     { label: "Contact", href: "#contact" }
-  ]
+  ],
+  footerSubscribeTitle: "Subscribe",
+  footerSubscribeSubtitle: "Info klinik terbaru",
+  footerSubscribeDescription: "Dapatkan informasi layanan, edukasi kesehatan, dan pengumuman klinik langsung dari MedRecord.",
+  footerEmailPlaceholder: "Tulis email",
+  footerSubmitLabel: "Kirim email",
+  footerColumns: [
+    {
+      title: "Tentang",
+      links: [
+        { label: "Klinik", href: "/#home" },
+        { label: "Departemen", href: "/#departments" },
+        { label: "Kontak", href: "/#contact" }
+      ]
+    },
+    {
+      title: "Menu",
+      links: [
+        { label: "Beranda", href: "/" },
+        { label: "Login", href: "/login" },
+        { label: "Daftar Pasien", href: "/login/register" }
+      ]
+    },
+    {
+      title: "Layanan",
+      links: [
+        { label: "Informasi Layanan", href: "/#services" },
+        { label: "Portal Pasien", href: "/patient-portal" },
+        { label: "Pendaftaran Pasien", href: "/login/register" }
+      ]
+    }
+  ],
+  footerBottomLinks: [
+    { label: "Privacy Policy", href: "/#contact" },
+    { label: "Layanan", href: "/#services" },
+    { label: "Informasi Klinik", href: "/#departments" }
+  ],
+  footerCopyrightText: "All rights reserved."
 };

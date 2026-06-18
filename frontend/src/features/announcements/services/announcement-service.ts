@@ -24,6 +24,11 @@ export async function getAnnouncements() {
   return response.data.data;
 }
 
+export async function getPublicAnnouncements() {
+  const response = await api.get<ApiResponse<AnnouncementItem[]>>("/announcements/public");
+  return response.data.data;
+}
+
 export async function createAnnouncement(payload: AnnouncementPayload) {
   const response = await api.post<ApiResponse<AnnouncementItem>>("/announcements", payload);
   return response.data.data;

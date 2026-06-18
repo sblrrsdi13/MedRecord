@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
+import { ChevronDown, LayoutDashboard, LogOut, UserCircle } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
 import { useScroll } from "@/components/ui/use-scroll";
+import { getMe, logout, refreshSession } from "@/features/auth/services/auth-service";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth-store";
 import type { SiteCms } from "@/types/site-cms";
 
 type HeaderProps = {
@@ -15,7 +19,14 @@ type HeaderProps = {
 
 export function Header({ cms }: HeaderProps) {
   const [open, setOpen] = React.useState(false);
+  const [accountOpen, setAccountOpen] = React.useState(false);
+  const [sessionChecked, setSessionChecked] = React.useState(false);
   const scrolled = useScroll(10);
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const setSession = useAuthStore((state) => state.setSession);
+  const clearSession = useAuthStore((state) => state.clearSession);
 
   React.useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -29,6 +40,34 @@ export function Header({ cms }: HeaderProps) {
     setOpen(false);
   }, [scrolled]);
 
+  React.useEffect(() => {
+    let mounted = true;
+
+    async function hydrateSession() {
+      if (user || sessionChecked) {
+        if (mounted) setSessionChecked(true);
+        return;
+      }
+
+      try {
+        const refreshed = accessToken ? { accessToken } : await refreshSession();
+        const me = await getMe();
+        if (!mounted) return;
+        setSession(me, refreshed.accessToken);
+      } catch {
+        if (mounted) clearSession();
+      } finally {
+        if (mounted) setSessionChecked(true);
+      }
+    }
+
+    void hydrateSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, [accessToken, clearSession, sessionChecked, setSession, user]);
+
   const links = cms.navLinks.length
     ? cms.navLinks
     : [
@@ -38,6 +77,18 @@ export function Header({ cms }: HeaderProps) {
         { label: "Doctors", href: "#doctors" },
         { label: "Contact", href: "#contact" }
       ];
+  const accountHref = user?.role === "PATIENT" ? "/patient-portal" : "/dashboard";
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } finally {
+      clearSession();
+      setOpen(false);
+      setAccountOpen(false);
+      router.push("/login");
+    }
+  }
 
   return (
     <div className={cn("fixed left-0 right-0 top-0 z-50 px-4 transition-all duration-500 md:px-8", scrolled ? "py-3" : "py-5")}>
@@ -82,23 +133,75 @@ export function Header({ cms }: HeaderProps) {
           </div>
 
           <div className="hidden items-center gap-2 md:flex">
-            <Link
-              href="/login"
-              className={buttonVariants({
-                variant: "outline",
-                className: "rounded-full border-[#faf8ef]/70 bg-[#faf8ef]/74 px-5 font-bold text-[#5f7974] shadow-sm backdrop-blur hover:bg-[#faf8ef]"
-              })}
-            >
-              Login
-            </Link>
-            <Link
-              href="/login/register"
-              className={buttonVariants({
-                className: "rounded-full bg-[#86a197] px-5 font-bold text-white shadow-lg shadow-stone-900/10 hover:bg-[#5f7974]"
-              })}
-            >
-              {cms.primaryCtaLabel}
-            </Link>
+            {user ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setAccountOpen((value) => !value)}
+                  className="flex h-11 items-center gap-3 rounded-full border border-[#faf8ef]/80 bg-[#faf8ef]/82 px-2.5 pr-4 font-bold text-[#2a3234] shadow-sm backdrop-blur-2xl transition hover:-translate-y-0.5 hover:bg-[#faf8ef]"
+                  aria-expanded={accountOpen}
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#5f7974] text-xs font-black uppercase text-white">
+                    {user.name.slice(0, 1)}
+                  </span>
+                  <span className="max-w-36 truncate text-left text-sm">{user.name}</span>
+                  <ChevronDown className={cn("h-4 w-4 text-[#5f7974] transition", accountOpen && "rotate-180")} />
+                </button>
+                {accountOpen && (
+                  <div className="absolute right-0 top-12 z-50 w-64 overflow-hidden rounded-2xl border border-[#c7c1b5] bg-[#faf8ef]/92 p-2 shadow-2xl shadow-stone-900/15 backdrop-blur-2xl animate-in fade-in zoom-in-95">
+                    <div className="border-b border-[#d9d5c9] px-3 py-3">
+                      <p className="truncate text-sm font-black text-[#2a3234]">{user.name}</p>
+                      <p className="truncate text-xs text-[#6a746f]">{user.email}</p>
+                      <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#5f7974]">{user.role}</p>
+                    </div>
+                    <Link
+                      href={accountHref}
+                      onClick={() => setAccountOpen(false)}
+                      className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[#2a3234] transition hover:bg-[#e6efe5] hover:text-[#5f7974]"
+                    >
+                      <LayoutDashboard className="h-4 w-4" />
+                      Buka Dashboard
+                    </Link>
+                    <Link
+                      href="/profile"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-[#2a3234] transition hover:bg-[#e6efe5] hover:text-[#5f7974]"
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      Profile Akun
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-red-600 transition hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className={buttonVariants({
+                    variant: "outline",
+                    className: "rounded-full border-[#faf8ef]/70 bg-[#faf8ef]/74 px-5 font-bold text-[#5f7974] shadow-sm backdrop-blur hover:bg-[#faf8ef]"
+                  })}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/login/register"
+                  className={buttonVariants({
+                    className: "rounded-full bg-[#86a197] px-5 font-bold text-white shadow-lg shadow-stone-900/10 hover:bg-[#5f7974]"
+                  })}
+                >
+                  {cms.primaryCtaLabel}
+                </Link>
+              </>
+            )}
           </div>
 
           <Button
@@ -112,17 +215,12 @@ export function Header({ cms }: HeaderProps) {
           </Button>
         </nav>
 
-        <div
-          className={cn(
-            "fixed inset-x-0 bottom-0 top-[76px] z-50 overflow-hidden border-t border-[#d9d5c9] bg-white/95 backdrop-blur-2xl transition md:hidden",
-            open ? "block" : "hidden"
-          )}
-        >
+      </header>
+      {open && (
+        <div className="relative z-[70] mx-auto mt-2 w-full max-w-[1440px] md:hidden">
           <div
-            data-slot={open ? "open" : "closed"}
-            className={cn(
-              "flex h-full w-full flex-col justify-between gap-y-2 p-4 ease-out data-[slot=open]:animate-in data-[slot=open]:zoom-in-95 data-[slot=closed]:animate-out data-[slot=closed]:zoom-out-95"
-            )}
+            data-slot="open"
+            className="max-h-[calc(100dvh-110px)] overflow-y-auto rounded-[1.6rem] border border-[#faf8ef]/80 bg-[#faf8ef]/96 p-3 shadow-[0_22px_70px_rgba(48,55,50,.24)] backdrop-blur-2xl ease-out animate-in fade-in zoom-in-95"
           >
             <div className="grid gap-y-2">
               {links.map((link) => (
@@ -130,7 +228,7 @@ export function Header({ cms }: HeaderProps) {
                   key={`${link.label}-${link.href}-mobile`}
                   className={buttonVariants({
                     variant: "ghost",
-                    className: "h-12 justify-start rounded-2xl px-4 text-base font-bold text-[#2a3234] hover:bg-[#faf8ef] hover:text-[#5f7974]"
+                    className: "h-12 justify-start rounded-2xl px-4 text-base font-bold text-[#2a3234] hover:bg-[#e6efe5] hover:text-[#5f7974]"
                   })}
                   href={link.href}
                   onClick={() => setOpen(false)}
@@ -139,30 +237,64 @@ export function Header({ cms }: HeaderProps) {
                 </a>
               ))}
             </div>
-            <div className="grid gap-2 border-t border-[#d9d5c9] pt-4">
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className={buttonVariants({
-                  variant: "outline",
-                  className: "h-11 w-full rounded-full border-[#c7c1b5] bg-white font-bold text-[#5f7974] hover:bg-[#faf8ef]"
-                })}
-              >
-                Login
-              </Link>
-              <Link
-                href="/login/register"
-                onClick={() => setOpen(false)}
-                className={buttonVariants({
-                  className: "h-11 w-full rounded-full bg-[#86a197] font-bold text-white hover:bg-[#5f7974]"
-                })}
-              >
-                {cms.primaryCtaLabel}
-              </Link>
+            <div className="mt-3 grid gap-2 border-t border-[#d9d5c9] pt-3">
+              {user ? (
+                <>
+                  <div className="rounded-2xl border border-[#c7c1b5] bg-white/70 p-3">
+                    <p className="truncate text-sm font-black text-[#2a3234]">{user.name}</p>
+                    <p className="truncate text-xs text-[#6a746f]">{user.email}</p>
+                    <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#5f7974]">{user.role}</p>
+                  </div>
+                  <Link
+                    href={accountHref}
+                    onClick={() => setOpen(false)}
+                    className={buttonVariants({
+                      className: "h-11 w-full rounded-full bg-[#86a197] font-bold text-white hover:bg-[#5f7974]"
+                    })}
+                  >
+                    Buka Dashboard
+                  </Link>
+                  <Link
+                    href="/profile"
+                    onClick={() => setOpen(false)}
+                    className={buttonVariants({
+                      variant: "outline",
+                      className: "h-11 w-full rounded-full border-[#c7c1b5] bg-white font-bold text-[#5f7974] hover:bg-[#faf8ef]"
+                    })}
+                  >
+                    Profile Akun
+                  </Link>
+                  <Button type="button" variant="outline" onClick={handleLogout} className="h-11 w-full rounded-full border-red-200 bg-white font-bold text-red-600 hover:bg-red-50">
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className={buttonVariants({
+                      variant: "outline",
+                      className: "h-11 w-full rounded-full border-[#c7c1b5] bg-white font-bold text-[#5f7974] hover:bg-[#faf8ef]"
+                    })}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/login/register"
+                    onClick={() => setOpen(false)}
+                    className={buttonVariants({
+                      className: "h-11 w-full rounded-full bg-[#86a197] font-bold text-white hover:bg-[#5f7974]"
+                    })}
+                  >
+                    {cms.primaryCtaLabel}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
-      </header>
+      )}
     </div>
   );
 }

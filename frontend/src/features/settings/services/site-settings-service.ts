@@ -22,7 +22,8 @@ const imageUploadLimits = {
   logo: { width: 512, height: 512, quality: 0.86 },
   favicon: { width: 256, height: 256, quality: 0.86 },
   hero: { width: 1920, height: 1080, quality: 0.82 },
-  doctor: { width: 1280, height: 900, quality: 0.82 }
+  doctor: { width: 1280, height: 900, quality: 0.82 },
+  service: { width: 900, height: 520, quality: 0.82 }
 } as const;
 
 async function compressCmsImage(file: File, purpose: keyof typeof imageUploadLimits) {
@@ -54,7 +55,7 @@ async function compressCmsImage(file: File, purpose: keyof typeof imageUploadLim
   });
 }
 
-export async function uploadCmsImage(file: File, purpose: "logo" | "favicon" | "hero" | "doctor") {
+export async function uploadCmsImage(file: File, purpose: "logo" | "favicon" | "hero" | "doctor" | "service") {
   const optimizedFile = await compressCmsImage(file, purpose);
   const formData = new FormData();
   formData.append("file", optimizedFile);

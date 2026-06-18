@@ -3,7 +3,7 @@
 import { memo, useDeferredValue, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, Database, Layers3, MoreHorizontal, Pencil, Search, Sparkles, TableProperties, Trash2 } from "lucide-react";
+import { Activity, Database, MoreHorizontal, Pencil, Search, Sparkles, TableProperties, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +28,6 @@ type ModulePageProps = {
   description: string;
   endpoint: string;
   columns: Column[];
-  notes?: string[];
   deleteEndpoint?: string;
   editEndpoint?: string;
   editFields?: Array<{ key: string; label: string; type?: "text" | "number" | "boolean" }>;
@@ -147,7 +146,7 @@ function formatCellValue(value: unknown) {
   return String(value);
 }
 
-export const ModulePage = memo(function ModulePage({ title, description, endpoint, columns, notes = [], deleteEndpoint, editEndpoint, editFields = [], actionSlot, rowActions = [] }: ModulePageProps) {
+export const ModulePage = memo(function ModulePage({ title, description, endpoint, columns, deleteEndpoint, editEndpoint, editFields = [], actionSlot, rowActions = [] }: ModulePageProps) {
   useResourceSocket();
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -279,22 +278,6 @@ export const ModulePage = memo(function ModulePage({ title, description, endpoin
             <Metric icon={TableProperties} label="Tampil" value={String(filteredRows.length)} />
           </div>
         </div>
-      </section>
-
-      <section>
-        <Card className="border-[#c7c1b5]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Layers3 className="h-5 w-5 text-[#5f7974]" />
-              Catatan Modul
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {(notes.length > 0 ? notes : ["Gunakan tombol tambah di atas halaman untuk input data.", "Data yang sudah dipakai modul lain mungkin tidak bisa dihapus.", "Data akan diperbarui otomatis setelah perubahan tersimpan."]).map((note) => (
-              <div key={note} className="rounded-lg bg-[#faf8ef] p-3 text-sm text-[#4a5657]">{note}</div>
-            ))}
-          </CardContent>
-        </Card>
       </section>
 
       <Card className="border-[#c7c1b5]">

@@ -238,7 +238,6 @@ export default function MedicalRecordsPage() {
         rowActions={[
           { label: "Print Rekam Medis", icon: <Printer className="h-4 w-4" />, onClick: printMedicalRecord }
         ]}
-        notes={["Akses rekam medis dibatasi role Admin, Doctor, dan Nurse.", "Data medis tidak disimpan di localStorage.", "Audit log disiapkan untuk aksi penting."]}
       />
     </div>
   );

@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Activity, Ambulance, Baby, CheckCircle2, HeartPulse, Hospital, ShieldCheck, Stethoscope, type LucideIcon } from "lucide-react";
-import { useEffect } from "react";
+import { Activity, Ambulance, Baby, CalendarDays, CheckCircle2, HeartPulse, Hospital, ShieldCheck, Stethoscope, type LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AnnouncementCard } from "@/components/ui/announcement-card";
 import { SiteFooter } from "@/components/shared/site-footer";
 import { Header } from "@/components/ui/header-2";
+import { getPublicAnnouncements, type AnnouncementItem } from "@/features/announcements/services/announcement-service";
 import { useSiteCms } from "@/hooks/use-site-cms";
 import type { SiteCms } from "@/types/site-cms";
 
@@ -18,14 +20,9 @@ const departmentIcons: Record<string, LucideIcon> = {
   Stethoscope
 };
 
-const stats = [
-  { value: "24/7", label: "Portal aktif" },
-  { value: "6+", label: "Role operasional" },
-  { value: "Realtime", label: "Antrian & notifikasi" }
-];
-
 export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
   const cms = useSiteCms(true, true, initialCms);
+  const [publicAnnouncements, setPublicAnnouncements] = useState<AnnouncementItem[]>([]);
 
   useEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>(".scroll-reveal"));
@@ -46,19 +43,29 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+    getPublicAnnouncements()
+      .then((items) => {
+        if (mounted) setPublicAnnouncements(items.filter((item) => item.isActive));
+      })
+      .catch(() => {
+        if (mounted) setPublicAnnouncements([]);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <main className="flex min-h-screen flex-col overflow-hidden bg-[#f4efe4] text-[#2a3234]">
       <Header cms={cms} />
-      {cms.announcementBanner && (
-        <div className="fixed left-1/2 top-20 z-40 hidden -translate-x-1/2 rounded-full border border-[#c7c1b5] bg-[#faf8ef]/85 px-5 py-2 text-xs font-bold text-[#5f7974] shadow-lg backdrop-blur-md md:block">
-          {cms.announcementBanner}
-        </div>
-      )}
 
       <section id="home" className="relative flex min-h-screen items-center overflow-hidden">
         <Image
           src={cms.heroImageUrl}
-          alt="Dokter dan pasien di ruang klinik modern"
+          alt={cms.heroImageAlt}
           fill
           priority
           sizes="100vw"
@@ -97,11 +104,11 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
             <p className="text-sm font-bold uppercase text-[#5f7974]">{cms.departmentsEyebrow}</p>
             <h2 className="mt-3 text-3xl font-black md:text-4xl">{cms.departmentsTitle}</h2>
           </div>
-          <div className="landing-swipe mt-10 flex snap-x gap-5 overflow-x-auto pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="landing-swipe mt-10 flex snap-x gap-5 overflow-x-auto overscroll-x-contain pb-6 pr-6 touch-pan-x">
             {cms.departments.map((item) => {
               const Icon = departmentIcons[item.icon] ?? Stethoscope;
               return (
-                <article key={item.title} className="scroll-reveal landing-card soft-panel group min-w-[78vw] snap-center rounded-3xl p-8 text-center transition duration-300 hover:-translate-y-2 sm:min-w-[360px] lg:min-w-[31%]">
+                <article key={item.title} className="scroll-reveal landing-card soft-panel group min-w-[78vw] shrink-0 snap-center rounded-3xl p-8 text-center transition duration-300 hover:-translate-y-2 sm:min-w-[360px] lg:min-w-[31%]">
                   <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-[#eef1e8] text-[#86a197] transition group-hover:scale-110 group-hover:bg-[#e6efe5]">
                     <Icon className="h-10 w-10" />
                   </div>
@@ -125,9 +132,9 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
               <span className="inline-flex items-center gap-2 rounded-full bg-[#faf8ef] px-4 py-2 shadow-sm"><CheckCircle2 className="h-4 w-4 text-[#5f7974]" /> {cms.servicesBadge}</span>
             </div>
           </div>
-          <div className="landing-swipe flex snap-x gap-6 overflow-x-auto pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="landing-swipe flex snap-x gap-6 overflow-x-auto overscroll-x-contain pb-6 pr-6 touch-pan-x">
             {cms.services.map((item) => (
-              <article key={item.title} className="scroll-reveal landing-card soft-panel group min-w-[84vw] snap-center overflow-hidden rounded-3xl p-4 transition duration-300 hover:-translate-y-2 sm:min-w-[420px] lg:min-w-[31%]">
+              <article key={item.title} className="scroll-reveal landing-card soft-panel group min-w-[84vw] shrink-0 snap-center overflow-hidden rounded-3xl p-4 transition duration-300 hover:-translate-y-2 sm:min-w-[420px] lg:min-w-[31%]">
                 <div className="overflow-hidden rounded-2xl">
                   <Image src={item.image} alt={item.title} width={640} height={320} sizes="(min-width: 1024px) 31vw, (min-width: 640px) 420px, 84vw" className="h-52 w-full object-cover transition duration-700 group-hover:scale-110" />
                 </div>
@@ -144,7 +151,7 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
       <section id="doctors" className="content-auto scroll-reveal px-4 py-16 md:px-8">
         <div className="soft-panel mx-auto grid max-w-[1160px] gap-8 rounded-[2rem] p-6 md:grid-cols-[0.9fr_1.1fr] md:p-10">
           <div className="scroll-reveal relative min-h-80 overflow-hidden rounded-3xl bg-[#d9d5c9]">
-            <Image src={cms.doctorImageUrl} alt="Dokter klinik" fill sizes="(min-width: 768px) 45vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
+            <Image src={cms.doctorImageUrl} alt={cms.doctorImageAlt} fill sizes="(min-width: 768px) 45vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#5f7974]/55 to-transparent" />
           </div>
           <div className="scroll-reveal flex flex-col justify-center">
@@ -154,7 +161,7 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
               {cms.doctorSectionDescription}
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              {stats.map((item) => (
+              {cms.landingStats.map((item) => (
                 <div key={item.label} className="scroll-reveal rounded-2xl bg-[#faf8ef] p-4">
                   <p className="text-xl font-black text-[#5f7974]">{item.value}</p>
                   <p className="mt-1 text-xs font-semibold uppercase text-[#4a5657]">{item.label}</p>
@@ -166,10 +173,63 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
       </section>
 
       <section id="contact" className="content-auto scroll-reveal px-4 pb-14 md:px-8">
-        <div className="mx-auto mb-6 max-w-[1160px] rounded-[2rem] border border-[#c7c1b5] bg-[#faf8ef] p-8 shadow-sm">
-          <p className="text-sm font-bold uppercase text-[#5f7974]">Informasi</p>
-          <h2 className="mt-2 text-3xl font-black text-[#2a3234]">{cms.informationPageTitle}</h2>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-[#4a5657]">{cms.informationPageContent}</p>
+        <div className="mx-auto mb-6 max-w-[1160px] overflow-hidden rounded-[2rem] border border-[#c7c1b5] bg-[#faf8ef] shadow-sm">
+          <div className="relative p-8 md:p-10">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#86a197]/16 blur-3xl" />
+            <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-sm font-bold uppercase text-[#5f7974]">{cms.informationEyebrow}</p>
+                <h2 className="mt-2 text-3xl font-black text-[#2a3234] md:text-4xl">{cms.informationPageTitle}</h2>
+                <p className="mt-4 max-w-3xl text-sm leading-7 text-[#4a5657]">{cms.informationPageContent}</p>
+              </div>
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#c7c1b5] bg-white/70 px-4 py-2 text-xs font-bold text-[#5f7974]">
+                <CalendarDays className="h-4 w-4" />
+                Update Klinik
+              </span>
+            </div>
+
+            <div className="relative mt-8">
+              {publicAnnouncements.length > 0 ? (
+                <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+                  <AnnouncementCard
+                    item={publicAnnouncements[0]}
+                    dateLabel={formatAnnouncementDate(publicAnnouncements[0].createdAt)}
+                    authorLabel={publicAnnouncements[0].author?.name ?? "MedRecord"}
+                  />
+                  <div className="grid gap-4">
+                    {publicAnnouncements.slice(1, 4).map((item) => (
+                      <AnnouncementCard
+                        key={item.id}
+                        item={item}
+                        compact
+                        dateLabel={formatAnnouncementDate(item.createdAt)}
+                        authorLabel={item.author?.name ?? "MedRecord"}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-[#c7c1b5] bg-white/65 p-6 text-sm leading-7 text-[#4a5657]">
+                  Belum ada informasi publik terbaru. Admin dapat menambahkan konten dari menu Pengumuman.
+                </div>
+              )}
+
+              {publicAnnouncements.length > 4 && (
+                <div className="landing-swipe mt-5 flex snap-x gap-4 overflow-x-auto overscroll-x-contain pb-4 pr-4 touch-pan-x">
+                  {publicAnnouncements.slice(4).map((item) => (
+                    <div key={item.id} className="min-w-[82vw] shrink-0 snap-center sm:min-w-[360px] lg:min-w-[340px]">
+                      <AnnouncementCard
+                        item={item}
+                        compact
+                        dateLabel={formatAnnouncementDate(item.createdAt)}
+                        authorLabel={item.author?.name ?? "MedRecord"}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         <div className="mx-auto flex max-w-[1160px] flex-col items-center justify-between gap-5 rounded-[2rem] bg-[#5f7974] p-8 text-white shadow-2xl shadow-stone-900/20 md:flex-row">
           <div>
@@ -177,11 +237,11 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
             <h2 className="mt-2 text-3xl font-black">{cms.ctaTitle}</h2>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/login" className="inline-flex h-10 items-center justify-center rounded-full bg-white px-7 text-sm font-bold text-[#5f7974] transition hover:bg-[#e6efe5]">
-              Login
+            <Link href={cms.ctaPrimaryHref} className="inline-flex h-10 items-center justify-center rounded-full bg-white px-7 text-sm font-bold text-[#5f7974] transition hover:bg-[#e6efe5]">
+              {cms.ctaPrimaryLabel}
             </Link>
-            <Link href="/login/register" className="inline-flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/10 px-7 text-sm font-bold text-white transition hover:bg-white/20">
-              Register Pasien
+            <Link href={cms.ctaSecondaryHref} className="inline-flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/10 px-7 text-sm font-bold text-white transition hover:bg-white/20">
+              {cms.ctaSecondaryLabel}
             </Link>
           </div>
         </div>
@@ -190,6 +250,14 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
       <SiteFooter cms={cms} />
     </main>
   );
+}
+
+function formatAnnouncementDate(value: string) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }).format(new Date(value));
 }
 
 

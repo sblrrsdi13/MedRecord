@@ -83,7 +83,9 @@ export function AppSidebar() {
   const user = useAuthStore((state) => state.user);
   const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
+  const [menuQuery, setMenuQuery] = useState("");
   const visibleGroups = getVisibleSidebarGroups(role);
+  const filteredGroups = filterSidebarGroups(visibleGroups, menuQuery, t);
 
   return (
     <>
@@ -103,8 +105,8 @@ export function AppSidebar() {
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
-          <SidebarSearch collapsed={collapsed} />
-          <SidebarNav groups={visibleGroups} pathname={pathname} t={t} collapsed={collapsed} />
+          <SidebarSearch collapsed={collapsed} value={menuQuery} onChange={setMenuQuery} onFocusCollapsed={() => setCollapsed(false)} />
+          <SidebarNav groups={filteredGroups} pathname={pathname} t={t} collapsed={collapsed} query={menuQuery} />
           <SidebarProfile name={user?.name ?? "Guest"} email={user?.email ?? "-"} role={user?.role ?? "Clinic User"} t={t} collapsed={collapsed} />
         </div>
       </aside>
@@ -118,7 +120,9 @@ export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () =>
   const role = useAuthStore((state) => state.user?.role);
   const user = useAuthStore((state) => state.user);
   const { t } = useLanguage();
+  const [menuQuery, setMenuQuery] = useState("");
   const visibleGroups = getVisibleSidebarGroups(role);
+  const filteredGroups = filterSidebarGroups(visibleGroups, menuQuery, t);
 
   return (
     <div className={cn("fixed inset-0 z-50 md:hidden", open ? "pointer-events-auto" : "pointer-events-none")}>
@@ -146,8 +150,8 @@ export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () =>
             <X className="h-4 w-4" />
           </button>
         </div>
-        <SidebarSearch collapsed={false} />
-        <SidebarNav groups={visibleGroups} pathname={pathname} onNavigate={onClose} t={t} collapsed={false} />
+        <SidebarSearch collapsed={false} value={menuQuery} onChange={setMenuQuery} />
+        <SidebarNav groups={filteredGroups} pathname={pathname} onNavigate={onClose} t={t} collapsed={false} query={menuQuery} />
         <SidebarProfile name={user?.name ?? "Guest"} email={user?.email ?? "-"} role={user?.role ?? "Clinic User"} t={t} collapsed={false} />
       </aside>
     </div>
@@ -178,6 +182,23 @@ function BrandHeader({ collapsed, t }: { collapsed: boolean; t: (key: string) =>
   );
 }
 
+function filterSidebarGroups(groups: SidebarGroup[], query: string, t: (key: string) => string) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return groups;
+
+  return groups
+    .map((group) => {
+      const groupMatch = group.title.toLowerCase().includes(normalizedQuery);
+      const items = group.items.filter((item) => {
+        const label = t(item.labelKey).toLowerCase();
+        const href = item.href.toLowerCase();
+        return groupMatch || label.includes(normalizedQuery) || href.includes(normalizedQuery.replace(/\s+/g, "-"));
+      });
+      return { ...group, items };
+    })
+    .filter((group) => group.items.length > 0);
+}
+
 function BrandMark({ compact = false, collapsed = false, t }: { compact?: boolean; collapsed?: boolean; t: (key: string) => string }) {
   const brand = useSiteCms();
 
@@ -194,7 +215,17 @@ function BrandMark({ compact = false, collapsed = false, t }: { compact?: boolea
   );
 }
 
-function SidebarSearch({ collapsed }: { collapsed: boolean }) {
+function SidebarSearch({
+  collapsed,
+  value,
+  onChange,
+  onFocusCollapsed
+}: {
+  collapsed: boolean;
+  value: string;
+  onChange: (value: string) => void;
+  onFocusCollapsed?: () => void;
+}) {
   return (
     <div className={cn("shrink-0 px-4 pt-4 transition-all duration-300", collapsed && "px-3")}>
       <div
@@ -207,6 +238,11 @@ function SidebarSearch({ collapsed }: { collapsed: boolean }) {
         <input
           aria-label="Cari menu"
           placeholder="Cari menu..."
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onFocus={() => {
+            if (collapsed) onFocusCollapsed?.();
+          }}
           className={cn(
             "min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#7a827e] focus:ring-0",
             collapsed && "hidden"
@@ -217,12 +253,17 @@ function SidebarSearch({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-function SidebarNav({ groups, pathname, onNavigate, t, collapsed }: { groups: SidebarGroup[]; pathname: string; onNavigate?: () => void; t: (key: string) => string; collapsed: boolean }) {
+function SidebarNav({ groups, pathname, onNavigate, t, collapsed, query }: { groups: SidebarGroup[]; pathname: string; onNavigate?: () => void; t: (key: string) => string; collapsed: boolean; query: string }) {
   let itemIndex = 0;
 
   return (
     <nav className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden", collapsed ? "px-3" : "px-3")}>
       <div className="space-y-5">
+        {groups.length === 0 && (
+          <div className={cn("rounded-xl border border-dashed border-[#c7c1b5] bg-white/65 p-3 text-center text-xs font-medium text-[#6a746f]", collapsed && "hidden")}>
+            Menu tidak ditemukan untuk "{query.trim()}".
+          </div>
+        )}
         {groups.map((group) => (
           <section key={group.title} className="space-y-1.5">
             <div className={cn("px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#7a827e] transition-all duration-200", collapsed && "px-0 text-center text-[9px] tracking-normal")}>

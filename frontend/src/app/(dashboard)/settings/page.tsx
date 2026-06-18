@@ -9,14 +9,17 @@ import { defaultSiteCms } from "@/constants/default-site-cms";
 import { getSiteCmsSettings, updateSiteCmsSettings, uploadCmsImage } from "@/features/settings/services/site-settings-service";
 import type { SiteCms } from "@/types/site-cms";
 
-type CmsArrayKey = "navLinks" | "departments" | "services" | "socialLinks";
+type CmsArrayKey = "navLinks" | "departments" | "services" | "socialLinks" | "landingStats" | "footerColumns" | "footerBottomLinks";
 type CmsImageKey = "logoImageUrl" | "faviconUrl" | "heroImageUrl" | "doctorImageUrl";
 
 const arrayHints: Record<CmsArrayKey, string> = {
   navLinks: `[{"label":"Home","href":"#home"}]`,
   departments: `[{"title":"Poli Umum","desc":"Konsultasi umum","icon":"Stethoscope"}]`,
   services: `[{"title":"Digital Medical Records","desc":"Riwayat pasien terintegrasi","image":"https://..."}]`,
-  socialLinks: `[{"label":"Instagram","href":"https://instagram.com/...","icon":"Instagram"}]`
+  socialLinks: `[{"label":"Instagram","href":"https://instagram.com/...","icon":"Instagram"}]`,
+  landingStats: `[{"value":"24/7","label":"Portal aktif"}]`,
+  footerColumns: `[{"title":"Menu","links":[{"label":"Beranda","href":"/"}]}]`,
+  footerBottomLinks: `[{"label":"Privacy Policy","href":"/#contact"}]`
 };
 
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
@@ -26,6 +29,7 @@ const imagePurposeByKey: Record<CmsImageKey, "logo" | "favicon" | "hero" | "doct
   heroImageUrl: "hero",
   doctorImageUrl: "doctor"
 };
+const advancedJsonKeys: CmsArrayKey[] = ["navLinks", "departments", "socialLinks", "footerColumns", "footerBottomLinks"];
 
 function stringify(value: unknown) {
   return JSON.stringify(value, null, 2);
@@ -37,12 +41,16 @@ export default function SettingsPage() {
     navLinks: stringify(defaultSiteCms.navLinks),
     departments: stringify(defaultSiteCms.departments),
     services: stringify(defaultSiteCms.services),
-    socialLinks: stringify(defaultSiteCms.socialLinks)
+    socialLinks: stringify(defaultSiteCms.socialLinks),
+    landingStats: stringify(defaultSiteCms.landingStats),
+    footerColumns: stringify(defaultSiteCms.footerColumns),
+    footerBottomLinks: stringify(defaultSiteCms.footerBottomLinks)
   });
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<CmsImageKey | null>(null);
+  const [uploadingServiceIndex, setUploadingServiceIndex] = useState<number | null>(null);
 
   useEffect(() => {
     getSiteCmsSettings()
@@ -53,7 +61,10 @@ export default function SettingsPage() {
           navLinks: stringify(next.navLinks),
           departments: stringify(next.departments),
           services: stringify(next.services),
-          socialLinks: stringify(next.socialLinks)
+          socialLinks: stringify(next.socialLinks),
+          landingStats: stringify(next.landingStats),
+          footerColumns: stringify(next.footerColumns),
+          footerBottomLinks: stringify(next.footerBottomLinks)
         });
       })
       .catch(() => setError("Gagal memuat konfigurasi CMS. Pastikan login sebagai Admin."));
@@ -73,6 +84,13 @@ export default function SettingsPage() {
 
   function updateField<K extends keyof SiteCms>(key: K, value: SiteCms[K]) {
     setCms((current) => ({ ...current, [key]: value }));
+    setMessage(null);
+    setError(null);
+  }
+
+  function updateArrayField(key: CmsArrayKey, value: SiteCms[CmsArrayKey]) {
+    setCms((current) => ({ ...current, [key]: value }));
+    setJsonFields((current) => ({ ...current, [key]: stringify(value) }));
     setMessage(null);
     setError(null);
   }
@@ -105,6 +123,36 @@ export default function SettingsPage() {
       setError(err instanceof Error ? err.message : "Gagal upload gambar ke Vercel Blob.");
     } finally {
       setUploadingField(null);
+    }
+  }
+
+  async function handleServiceImageUpload(index: number, file?: File) {
+    if (!file) return;
+    setMessage(null);
+    setError(null);
+
+    if (!["image/png", "image/jpeg", "image/webp", "image/svg+xml"].includes(file.type)) {
+      setError("File harus berupa gambar PNG, JPG, WebP, atau SVG.");
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setError("Ukuran gambar maksimal 2MB. Kompres gambar terlebih dahulu agar website tetap cepat.");
+      return;
+    }
+
+    try {
+      setUploadingServiceIndex(index);
+      const url = await uploadCmsImage(file, "service");
+      const nextServices = cms.services.map((service, serviceIndex) => (
+        serviceIndex === index ? { ...service, image: url } : service
+      ));
+      updateArrayField("services", nextServices);
+      setMessage("Gambar service berhasil di-upload. Klik Simpan CMS untuk memakai perubahan ini.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal upload gambar service ke Vercel Blob.");
+    } finally {
+      setUploadingServiceIndex(null);
     }
   }
 
@@ -196,6 +244,7 @@ export default function SettingsPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Badge"><Input value={cms.heroBadge} onChange={(event) => updateField("heroBadge", event.target.value)} /></Field>
               <Field label="Judul Hero"><Input value={cms.heroTitle} onChange={(event) => updateField("heroTitle", event.target.value)} /></Field>
+              <Field label="Alt Text Hero Image" wide><Input value={cms.heroImageAlt} onChange={(event) => updateField("heroImageAlt", event.target.value)} /></Field>
               <Field label="Tombol Utama"><Input value={cms.primaryCtaLabel} onChange={(event) => updateField("primaryCtaLabel", event.target.value)} /></Field>
               <Field label="Link Tombol Utama"><Input value={cms.primaryCtaHref} onChange={(event) => updateField("primaryCtaHref", event.target.value)} /></Field>
               <Field label="Tombol Kedua"><Input value={cms.secondaryCtaLabel} onChange={(event) => updateField("secondaryCtaLabel", event.target.value)} /></Field>
@@ -203,6 +252,12 @@ export default function SettingsPage() {
               <Field label="Deskripsi Hero" wide>
                 <textarea className="min-h-24 w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#5f7974]/20" value={cms.heroDescription} onChange={(event) => updateField("heroDescription", event.target.value)} />
               </Field>
+            </div>
+            <div className="mt-5">
+              <LandingStatsEditor
+                stats={cms.landingStats}
+                onChange={(landingStats) => updateArrayField("landingStats", landingStats)}
+              />
             </div>
           </Panel>
 
@@ -257,8 +312,17 @@ export default function SettingsPage() {
               />
               <Field label="Doctor Eyebrow"><Input value={cms.doctorSectionEyebrow} onChange={(event) => updateField("doctorSectionEyebrow", event.target.value)} /></Field>
               <Field label="Doctor Title"><Input value={cms.doctorSectionTitle} onChange={(event) => updateField("doctorSectionTitle", event.target.value)} /></Field>
+              <Field label="Doctor Image Alt"><Input value={cms.doctorImageAlt} onChange={(event) => updateField("doctorImageAlt", event.target.value)} /></Field>
+              <Field label="Doctor Description" wide>
+                <textarea className="min-h-24 w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#5f7974]/20" value={cms.doctorSectionDescription} onChange={(event) => updateField("doctorSectionDescription", event.target.value)} />
+              </Field>
+              <Field label="Information Eyebrow"><Input value={cms.informationEyebrow} onChange={(event) => updateField("informationEyebrow", event.target.value)} /></Field>
               <Field label="CTA Eyebrow"><Input value={cms.ctaEyebrow} onChange={(event) => updateField("ctaEyebrow", event.target.value)} /></Field>
               <Field label="CTA Title"><Input value={cms.ctaTitle} onChange={(event) => updateField("ctaTitle", event.target.value)} /></Field>
+              <Field label="CTA Button Utama"><Input value={cms.ctaPrimaryLabel} onChange={(event) => updateField("ctaPrimaryLabel", event.target.value)} /></Field>
+              <Field label="CTA Link Utama"><Input value={cms.ctaPrimaryHref} onChange={(event) => updateField("ctaPrimaryHref", event.target.value)} /></Field>
+              <Field label="CTA Button Kedua"><Input value={cms.ctaSecondaryLabel} onChange={(event) => updateField("ctaSecondaryLabel", event.target.value)} /></Field>
+              <Field label="CTA Link Kedua"><Input value={cms.ctaSecondaryHref} onChange={(event) => updateField("ctaSecondaryHref", event.target.value)} /></Field>
               <Field label="Banner Pengumuman" wide><Input value={cms.announcementBanner} onChange={(event) => updateField("announcementBanner", event.target.value)} /></Field>
               <Field label="Judul Halaman Informasi"><Input value={cms.informationPageTitle} onChange={(event) => updateField("informationPageTitle", event.target.value)} /></Field>
               <Field label="SEO Title"><Input value={cms.seoTitle} onChange={(event) => updateField("seoTitle", event.target.value)} /></Field>
@@ -271,16 +335,38 @@ export default function SettingsPage() {
               <Field label="SEO Keywords" wide><Input value={cms.seoKeywords} onChange={(event) => updateField("seoKeywords", event.target.value)} /></Field>
               <Field label="Footer Phone"><Input value={cms.footerPhone} onChange={(event) => updateField("footerPhone", event.target.value)} /></Field>
               <Field label="Footer Email"><Input value={cms.footerEmail} onChange={(event) => updateField("footerEmail", event.target.value)} /></Field>
+              <Field label="Footer Contact Title"><Input value={cms.footerContactTitle} onChange={(event) => updateField("footerContactTitle", event.target.value)} /></Field>
+              <Field label="Footer Subscribe Title"><Input value={cms.footerSubscribeTitle} onChange={(event) => updateField("footerSubscribeTitle", event.target.value)} /></Field>
+              <Field label="Footer Subscribe Subtitle"><Input value={cms.footerSubscribeSubtitle} onChange={(event) => updateField("footerSubscribeSubtitle", event.target.value)} /></Field>
+              <Field label="Footer Email Placeholder"><Input value={cms.footerEmailPlaceholder} onChange={(event) => updateField("footerEmailPlaceholder", event.target.value)} /></Field>
+              <Field label="Footer Submit Label"><Input value={cms.footerSubmitLabel} onChange={(event) => updateField("footerSubmitLabel", event.target.value)} /></Field>
               <Field label="Footer Address" wide><Input value={cms.footerAddress} onChange={(event) => updateField("footerAddress", event.target.value)} /></Field>
               <Field label="Footer Description" wide>
                 <textarea className="min-h-24 w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#5f7974]/20" value={cms.footerDescription} onChange={(event) => updateField("footerDescription", event.target.value)} />
               </Field>
+              <Field label="Footer Subscribe Description" wide>
+                <textarea className="min-h-20 w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#5f7974]/20" value={cms.footerSubscribeDescription} onChange={(event) => updateField("footerSubscribeDescription", event.target.value)} />
+              </Field>
+              <Field label="Footer Copyright Text" wide><Input value={cms.footerCopyrightText} onChange={(event) => updateField("footerCopyrightText", event.target.value)} /></Field>
             </div>
           </Panel>
 
-          <Panel title="Data JSON Dinamis" icon={Settings}>
+          <Panel title="Konten Layanan Landing" icon={Settings}>
+            <ServiceEditor
+              services={cms.services}
+              uploadingIndex={uploadingServiceIndex}
+              onChange={(services) => updateArrayField("services", services)}
+              onUpload={handleServiceImageUpload}
+            />
+          </Panel>
+
+          <Panel title="Data JSON Dinamis Lanjutan" icon={Settings}>
+            <p className="mb-4 text-sm leading-6 text-[#6a746f]">
+              Dipakai untuk konten berulang yang strukturnya fleksibel seperti menu, departemen, social media, dan kolom footer.
+              Service dan statistik sudah punya editor visual di atas.
+            </p>
             <div className="grid gap-4">
-              {(Object.keys(jsonFields) as CmsArrayKey[]).map((key) => (
+              {advancedJsonKeys.map((key) => (
                 <Field key={key} label={`${key} (JSON)`} wide>
                   <textarea
                     className="min-h-40 w-full rounded-lg border bg-stone-950 px-3 py-2 font-mono text-xs text-stone-100 outline-none focus:ring-2 focus:ring-[#5f7974]/20"
@@ -323,6 +409,126 @@ function NumberPreview({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg border border-[#c7c1b5] bg-white px-3 py-2">
       <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#7e8178]">{label}</p>
       <p className="mt-1 font-mono text-sm font-bold text-[#2a3234]">{value}</p>
+    </div>
+  );
+}
+
+function LandingStatsEditor({
+  stats,
+  onChange
+}: {
+  stats: SiteCms["landingStats"];
+  onChange: (stats: SiteCms["landingStats"]) => void;
+}) {
+  return (
+    <div className="rounded-xl border border-[#c7c1b5] bg-[#faf8ef] p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.06em] text-[#4a5657]">Landing Stats</p>
+          <p className="mt-1 text-xs text-[#7a827e]">Maksimal 6 item, tampil di section dokter/operasional.</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onChange([...stats, { value: "0", label: "Label baru" }].slice(0, 6))}
+          disabled={stats.length >= 6}
+        >
+          Tambah
+        </Button>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {stats.map((item, index) => (
+          <div key={`${item.label}-${index}`} className="grid gap-2 rounded-xl border border-[#d7d2c8] bg-white p-3">
+            <Input
+              value={item.value}
+              placeholder="Nilai"
+              onChange={(event) => onChange(stats.map((stat, statIndex) => statIndex === index ? { ...stat, value: event.target.value } : stat))}
+            />
+            <Input
+              value={item.label}
+              placeholder="Label"
+              onChange={(event) => onChange(stats.map((stat, statIndex) => statIndex === index ? { ...stat, label: event.target.value } : stat))}
+            />
+            <Button type="button" variant="outline" onClick={() => onChange(stats.filter((_, statIndex) => statIndex !== index))} disabled={stats.length <= 1}>
+              Hapus
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ServiceEditor({
+  services,
+  uploadingIndex,
+  onChange,
+  onUpload
+}: {
+  services: SiteCms["services"];
+  uploadingIndex: number | null;
+  onChange: (services: SiteCms["services"]) => void;
+  onUpload: (index: number, file?: File) => void;
+}) {
+  return (
+    <div className="grid gap-4">
+      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+        <div>
+          <p className="text-sm font-bold text-[#2a3234]">Service Card</p>
+          <p className="mt-1 text-xs leading-5 text-[#7a827e]">Konten ini tampil di landing page. Maks. 8 layanan, gambar rekomendasi 900 x 520 px, maks. 2MB.</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onChange([...services, { title: "Layanan Baru", desc: "Deskripsi layanan", image: defaultSiteCms.services[0]?.image ?? defaultSiteCms.heroImageUrl }].slice(0, 8))}
+          disabled={services.length >= 8}
+        >
+          Tambah Service
+        </Button>
+      </div>
+      {services.map((service, index) => (
+        <div key={`${service.title}-${index}`} className="grid gap-4 rounded-2xl border border-[#c7c1b5] bg-[#faf8ef] p-4 md:grid-cols-[180px_1fr]">
+          <div className="overflow-hidden rounded-xl border bg-white">
+            <Image src={service.image} alt={service.title} width={360} height={220} className="h-36 w-full object-cover" />
+          </div>
+          <div className="grid gap-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="Judul Service">
+                <Input
+                  value={service.title}
+                  onChange={(event) => onChange(services.map((item, serviceIndex) => serviceIndex === index ? { ...item, title: event.target.value } : item))}
+                />
+              </Field>
+              <Field label="URL Gambar Service">
+                <Input
+                  value={service.image}
+                  onChange={(event) => onChange(services.map((item, serviceIndex) => serviceIndex === index ? { ...item, image: event.target.value } : item))}
+                />
+              </Field>
+            </div>
+            <Field label="Deskripsi Service" wide>
+              <textarea
+                className="min-h-20 w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#5f7974]/20"
+                value={service.desc}
+                onChange={(event) => onChange(services.map((item, serviceIndex) => serviceIndex === index ? { ...item, desc: event.target.value } : item))}
+              />
+            </Field>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                disabled={uploadingIndex === index}
+                onChange={(event) => onUpload(index, event.target.files?.[0])}
+                className="block w-full rounded-lg border border-[#c7c1b5] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#5f7974] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white disabled:cursor-not-allowed disabled:opacity-60 md:max-w-md"
+              />
+              <Button type="button" variant="outline" onClick={() => onChange(services.filter((_, serviceIndex) => serviceIndex !== index))} disabled={services.length <= 1}>
+                Hapus
+              </Button>
+            </div>
+            {uploadingIndex === index && <p className="text-xs text-[#5f7974]">Sedang upload gambar service...</p>}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

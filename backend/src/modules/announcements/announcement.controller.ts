@@ -7,6 +7,11 @@ export async function listAnnouncements(req: Request, res: Response) {
   return ok(res, announcements);
 }
 
+export async function listPublicAnnouncements(_req: Request, res: Response) {
+  const announcements = await announcementService.listPublicAnnouncements();
+  return ok(res, announcements);
+}
+
 export async function createAnnouncement(req: Request, res: Response) {
   const announcement = await announcementService.createAnnouncement(req.body, req.user!.id);
   return created(res, announcement, "Konten portal pasien berhasil dibuat");

@@ -44,19 +44,34 @@ export default function AnnouncementsPage() {
   }, []);
 
   async function submit(formData: FormData) {
+    setError(null);
     const payload = {
-      title: String(formData.get("title")),
-      content: String(formData.get("content")),
+      title: String(formData.get("title") ?? "").trim(),
+      content: String(formData.get("content") ?? "").trim(),
       category: String(formData.get("category")) as AnnouncementItem["category"],
       isActive: formData.get("isActive") === "true"
     };
 
-    if (editing) await updateAnnouncement(editing.id, payload);
-    else await createAnnouncement(payload);
+    if (payload.title.length < 3) {
+      setError("Judul minimal 3 karakter.");
+      return;
+    }
 
-    setOpen(false);
-    setEditing(null);
-    await load();
+    if (payload.content.length < 5) {
+      setError("Isi konten minimal 5 karakter.");
+      return;
+    }
+
+    try {
+      if (editing) await updateAnnouncement(editing.id, payload);
+      else await createAnnouncement(payload);
+
+      setOpen(false);
+      setEditing(null);
+      await load();
+    } catch (err) {
+      setError(getAnnouncementErrorMessage(err));
+    }
   }
 
   async function remove(id: string) {
@@ -148,6 +163,19 @@ export default function AnnouncementsPage() {
       </FormModalShell>
     </div>
   );
+}
+
+function getAnnouncementErrorMessage(error: unknown) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error &&
+    typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === "string"
+  ) {
+    return (error as { response: { data: { message: string } } }).response.data.message;
+  }
+
+  return "Gagal menyimpan konten. Pastikan judul minimal 3 karakter dan isi konten minimal 5 karakter.";
 }
 
 
