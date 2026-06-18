@@ -22,7 +22,26 @@ let realtimeSubscriberCount = 0;
 const subscribers = new Set<() => void>();
 
 function mergeCms(settings: Partial<SiteCms>) {
-  return { ...defaultSiteCms, ...settings };
+  const next = { ...defaultSiteCms, ...settings };
+
+  if (next.brandName.trim().toLowerCase() === "klinik utama") {
+    next.brandName = "MedRecord";
+  }
+
+  if (next.brandSubtitle.trim().toLowerCase() === "medical portal") {
+    next.brandSubtitle = "Accurate Records, Better Care";
+  }
+
+  if (next.footerEmail === "info@medrecord.local") {
+    next.footerEmail = "info@medrecord.local";
+  }
+
+  next.socialLinks = next.socialLinks.map((link) => ({
+    ...link,
+    href: link.href.replace(/klinikutama/gi, "medrecord")
+  }));
+
+  return next;
 }
 
 function readCachedCms() {

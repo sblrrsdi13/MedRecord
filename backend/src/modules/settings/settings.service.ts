@@ -6,7 +6,30 @@ const CMS_KEY = "site_cms";
 
 function normalizeCms(cms: SiteCms): SiteCms {
   const next = { ...cms };
+  const legacyBrandName = next.brandName.trim().toLowerCase();
+  const legacySubtitle = next.brandSubtitle.trim().toLowerCase();
   const legacyPrimaryLabel = next.primaryCtaLabel.trim().toLowerCase();
+
+  if (legacyBrandName === "klinik utama") {
+    next.brandName = "MedRecord";
+  }
+
+  if (legacySubtitle === "medical portal") {
+    next.brandSubtitle = "Accurate Records, Better Care";
+  }
+
+  if (next.logoText === "KU") {
+    next.logoText = "MR";
+  }
+
+  if (next.footerEmail === "info@medrecord.local") {
+    next.footerEmail = "info@medrecord.local";
+  }
+
+  next.socialLinks = next.socialLinks.map((link) => ({
+    ...link,
+    href: link.href.replace(/klinikutama/gi, "medrecord")
+  }));
 
   if (legacyPrimaryLabel === "masuk ke sistem" || legacyPrimaryLabel === "masuk sistem") {
     next.primaryCtaLabel = "Register";

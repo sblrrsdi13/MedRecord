@@ -68,7 +68,7 @@ export const defaultSiteCms: SiteCms = {
   footerDescription: "MedRecord membantu klinik mengelola pelayanan pasien, antrian, farmasi, pembayaran, dan laporan operasional secara akurat.",
   footerAddress: "Jl. Sehat No. 10, Bandung, Jawa Barat",
   footerPhone: "+62 812-3456-7890",
-  footerEmail: "info@klinikutama.local",
+  footerEmail: "info@medrecord.local",
   footerContactTitle: "Kontak",
   patientCodePrefix: "PS",
   patientCodeSequenceLength: 4,
@@ -77,11 +77,11 @@ export const defaultSiteCms: SiteCms = {
   invoicePrefix: "INV",
   invoiceSequenceLength: 6,
   socialLinks: [
-    { label: "Instagram", href: "https://www.instagram.com/klinikutama", icon: "Instagram" },
-    { label: "Facebook", href: "https://www.facebook.com/klinikutama", icon: "Facebook" },
-    { label: "Twitter", href: "https://twitter.com/klinikutama", icon: "Twitter" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/company/klinikutama", icon: "Linkedin" },
-    { label: "YouTube", href: "https://www.youtube.com/@klinikutama", icon: "Youtube" }
+    { label: "Instagram", href: "https://www.instagram.com/medrecord", icon: "Instagram" },
+    { label: "Facebook", href: "https://www.facebook.com/medrecord", icon: "Facebook" },
+    { label: "Twitter", href: "https://twitter.com/medrecord", icon: "Twitter" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/company/medrecord", icon: "Linkedin" },
+    { label: "YouTube", href: "https://www.youtube.com/@medrecord", icon: "Youtube" }
   ],
   navLinks: [
     { label: "Home", href: "#home" },
