@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowLeft, LogIn, ShieldCheck, Sparkles, UserPlus, type LucideIcon } from "lucide-react";
+import { LogIn, ShieldCheck, Sparkles, UserPlus, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { PatientRegisterForm } from "@/features/auth/components/patient-register-form";
@@ -39,7 +38,7 @@ export default function LoginPage() {
           <div className="space-y-8">
             <div className="soft-panel inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-[#4a5657]">
               <Sparkles className="h-4 w-4 text-[#5f7974]" />
-              Accurate Records, Better Care
+              Smart Clinic Management 2026
             </div>
             <div className="max-w-3xl space-y-5">
               <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
@@ -55,10 +54,6 @@ export default function LoginPage() {
         <Card className="order-1 flex max-h-none min-h-[calc(100vh-1rem)] w-full flex-col overflow-hidden rounded-[1.75rem] border-white/80 bg-white/92 shadow-2xl shadow-stone-900/10 backdrop-blur-xl lg:order-2 lg:h-full lg:min-h-0">
           <div className={cn("flex min-h-0 flex-1 flex-col", activeTab === "login" && "justify-center")}>
             <CardHeader className="shrink-0 pb-3">
-              <Link href="/" className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-[#c7c1b5] bg-[#faf8ef] px-4 py-2 text-xs font-bold text-[#5f7974] transition hover:-translate-y-0.5 hover:bg-white">
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Link>
               <div className="mb-3 flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center overflow-hidden">
                   <Image src={cms.logoImageUrl} alt={`${cms.brandName} logo`} width={48} height={48} className="h-12 w-12 object-contain" priority />

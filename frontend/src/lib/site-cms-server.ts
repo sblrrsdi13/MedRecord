@@ -9,33 +9,28 @@ type ApiResponse<T> = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
-function normalizeServerCms(settings: Partial<SiteCms>): SiteCms {
-  const next = { ...defaultSiteCms, ...settings };
+function normalizeLegacyText(value: string) {
+  return value
+    .replace(/klinik utama/gi, "MedRecord")
+    .replace(/klinikutama/gi, "medrecord");
+}
 
-  if (next.brandName.trim().toLowerCase() === "klinik utama") {
-    next.brandName = "MedRecord";
-  }
+function normalizeLegacyValues<T>(value: T): T {
+  if (typeof value === "string") return normalizeLegacyText(value) as T;
+  if (Array.isArray(value)) return value.map((item) => normalizeLegacyValues(item)) as T;
+  if (!value || typeof value !== "object") return value;
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, normalizeLegacyValues(entry)])
+  ) as T;
+}
+
+function normalizeServerCms(settings: Partial<SiteCms>): SiteCms {
+  const next = normalizeLegacyValues({ ...defaultSiteCms, ...settings });
 
   if (next.brandSubtitle.trim().toLowerCase() === "medical portal") {
     next.brandSubtitle = "Accurate Records, Better Care";
   }
-
-  if (next.footerEmail === "info@klinikutama.local") {
-    next.footerEmail = "info@medrecord.local";
-  }
-
-  if (/klinik utama/i.test(next.seoTitle)) {
-    next.seoTitle = next.seoTitle.replace(/klinik utama/gi, "MedRecord");
-  }
-
-  if (/klinik utama/i.test(next.seoDescription)) {
-    next.seoDescription = next.seoDescription.replace(/klinik utama/gi, "MedRecord");
-  }
-
-  next.socialLinks = next.socialLinks.map((link) => ({
-    ...link,
-    href: link.href.replace(/klinikutama/gi, "medrecord")
-  }));
 
   return next;
 }

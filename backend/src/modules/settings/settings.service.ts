@@ -4,40 +4,33 @@ import { cmsSchema, defaultCms, type SiteCms } from "./settings.schema.js";
 
 const CMS_KEY = "site_cms";
 
+function normalizeLegacyText(value: string) {
+  return value
+    .replace(/klinik utama/gi, "MedRecord")
+    .replace(/klinikutama/gi, "medrecord");
+}
+
+function normalizeLegacyValues<T>(value: T): T {
+  if (typeof value === "string") return normalizeLegacyText(value) as T;
+  if (Array.isArray(value)) return value.map((item) => normalizeLegacyValues(item)) as T;
+  if (!value || typeof value !== "object") return value;
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, normalizeLegacyValues(entry)])
+  ) as T;
+}
+
 function normalizeCms(cms: SiteCms): SiteCms {
-  const next = { ...cms };
-  const legacyBrandName = next.brandName.trim().toLowerCase();
-  const legacySubtitle = next.brandSubtitle.trim().toLowerCase();
+  const next = normalizeLegacyValues({ ...cms });
   const legacyPrimaryLabel = next.primaryCtaLabel.trim().toLowerCase();
 
-  if (legacyBrandName === "klinik utama") {
-    next.brandName = "MedRecord";
-  }
-
-  if (legacySubtitle === "medical portal") {
+  if (next.brandSubtitle.trim().toLowerCase() === "medical portal") {
     next.brandSubtitle = "Accurate Records, Better Care";
   }
 
   if (next.logoText === "KU") {
     next.logoText = "MR";
   }
-
-  if (next.footerEmail === "info@klinikutama.local") {
-    next.footerEmail = "info@medrecord.local";
-  }
-
-  if (/klinik utama/i.test(next.seoTitle)) {
-    next.seoTitle = next.seoTitle.replace(/klinik utama/gi, "MedRecord");
-  }
-
-  if (/klinik utama/i.test(next.seoDescription)) {
-    next.seoDescription = next.seoDescription.replace(/klinik utama/gi, "MedRecord");
-  }
-
-  next.socialLinks = next.socialLinks.map((link) => ({
-    ...link,
-    href: link.href.replace(/klinikutama/gi, "medrecord")
-  }));
 
   if (legacyPrimaryLabel === "masuk ke sistem" || legacyPrimaryLabel === "masuk sistem") {
     next.primaryCtaLabel = "Register";
