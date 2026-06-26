@@ -242,7 +242,6 @@ export default function SettingsPage() {
 
           <Panel title="Landing Hero" icon={Eye}>
             <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Badge"><Input value={cms.heroBadge} onChange={(event) => updateField("heroBadge", event.target.value)} /></Field>
               <Field label="Judul Hero"><Input value={cms.heroTitle} onChange={(event) => updateField("heroTitle", event.target.value)} /></Field>
               <Field label="Alt Text Hero Image" wide><Input value={cms.heroImageAlt} onChange={(event) => updateField("heroImageAlt", event.target.value)} /></Field>
               <Field label="Tombol Utama"><Input value={cms.primaryCtaLabel} onChange={(event) => updateField("primaryCtaLabel", event.target.value)} /></Field>
@@ -609,8 +608,7 @@ function Preview({ cms }: { cms: SiteCms }) {
           </div>
 
           <div className="pt-24">
-            <span className="rounded-full bg-white/80 px-3 py-2 text-xs font-bold text-[#5f7974]">{cms.heroBadge}</span>
-            <h3 className="mt-5 max-w-md text-4xl font-black leading-tight text-[#2a3234]">{cms.heroTitle}</h3>
+            <h3 className="max-w-md text-4xl font-black leading-tight text-[#2a3234]">{cms.heroTitle}</h3>
             <p className="mt-4 max-w-md text-sm leading-6 text-[#3f4a49]">{cms.heroDescription}</p>
           </div>
         </div>

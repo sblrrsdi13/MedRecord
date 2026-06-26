@@ -39,7 +39,6 @@ export type SiteCms = {
   themeMode: "sage" | "warm" | "contrast";
   heroImageUrl: string;
   heroImageAlt: string;
-  heroBadge: string;
   heroTitle: string;
   heroDescription: string;
   primaryCtaLabel: string;

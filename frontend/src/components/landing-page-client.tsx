@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Activity, Ambulance, Baby, CalendarDays, CheckCircle2, HeartPulse, Hospital, ShieldCheck, Stethoscope, type LucideIcon } from "lucide-react";
+import { Activity, Ambulance, Baby, CalendarDays, CheckCircle2, HeartPulse, Hospital, Stethoscope, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnnouncementCard } from "@/components/ui/announcement-card";
 import { SiteFooter } from "@/components/shared/site-footer";
@@ -32,6 +32,10 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
       elements.forEach((element) => element.classList.add("is-visible"));
       return;
     }
+
+    elements.forEach((element, index) => {
+      element.style.setProperty("--reveal-delay", `${Math.min(index * 45, 260)}ms`);
+    });
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -76,7 +80,7 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
     <main className="flex min-h-screen flex-col overflow-hidden bg-[#f4efe4] text-[#2a3234]">
       <Header cms={cms} />
 
-      <section id="home" className="relative flex min-h-screen items-center overflow-hidden">
+      <section id="home" className="landing-section relative flex min-h-screen scroll-mt-24 items-center overflow-hidden">
         <Image
           src={cms.heroImageUrl}
           alt={cms.heroImageAlt}
@@ -88,13 +92,9 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
         <div className="absolute inset-0 bg-gradient-to-r from-[#faf8ef]/98 via-[#faf8ef]/90 to-[#d9d5c9]/36" />
         <div className="absolute inset-y-0 left-0 w-[64%] bg-[radial-gradient(circle_at_25%_45%,rgba(250,248,239,.98),rgba(250,248,239,.78)_46%,transparent_72%)]" />
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#f4efe4] via-[#f4efe4]/75 to-transparent" />
-        <div className="relative z-10 mx-auto grid w-full max-w-[1440px] px-6 pt-28 md:px-10 lg:grid-cols-[1fr_0.7fr]">
+        <div className="landing-focus-target relative z-10 mx-auto grid w-full max-w-[1440px] px-6 pt-28 md:px-10 lg:grid-cols-[1fr_0.7fr]">
           <div className="landing-reveal max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#9aa9a2] bg-white/82 px-4 py-2 text-xs font-bold uppercase text-[#5f7974] shadow-sm backdrop-blur">
-              <ShieldCheck className="h-4 w-4" />
-              {cms.heroBadge}
-            </span>
-            <h1 className="mt-8 max-w-xl text-5xl font-black leading-[1.04] text-[#2a3234] md:text-7xl">
+            <h1 className="max-w-xl text-5xl font-black leading-[1.04] text-[#2a3234] md:text-7xl">
               {cms.heroTitle}
             </h1>
             <p className="mt-6 max-w-xl text-lg font-medium leading-8 text-[#3f4a49] md:text-xl">
@@ -112,8 +112,8 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
         </div>
       </section>
 
-      <section id="departments" className="content-auto scroll-reveal px-4 py-14 md:px-8">
-        <div className="mx-auto max-w-[1440px]">
+      <section id="departments" className="landing-section content-auto scroll-reveal scroll-mt-24 px-4 py-14 md:px-8">
+        <div className="landing-focus-target mx-auto max-w-[1440px]">
           <div className="scroll-reveal text-center">
             <p className="text-sm font-bold uppercase text-[#5f7974]">{cms.departmentsEyebrow}</p>
             <h2 className="mt-3 text-3xl font-black md:text-4xl">{cms.departmentsTitle}</h2>
@@ -135,8 +135,8 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
         </div>
       </section>
 
-      <section id="services" className="content-auto scroll-reveal bg-[#e9eee3] px-4 py-16 md:px-8">
-        <div className="mx-auto max-w-[1440px]">
+      <section id="services" className="landing-section content-auto scroll-reveal scroll-mt-24 bg-[#e9eee3] px-4 py-16 md:px-8">
+        <div className="landing-focus-target mx-auto max-w-[1440px]">
           <div className="scroll-reveal mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
               <p className="text-sm font-bold uppercase text-[#5f7974]">{cms.servicesEyebrow}</p>
@@ -162,8 +162,8 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
         </div>
       </section>
 
-      <section id="doctors" className="content-auto scroll-reveal px-4 py-16 md:px-8">
-        <div className="soft-panel mx-auto grid max-w-[1160px] gap-8 rounded-[2rem] p-6 md:grid-cols-[0.9fr_1.1fr] md:p-10">
+      <section id="doctors" className="landing-section content-auto scroll-reveal scroll-mt-24 px-4 py-16 md:px-8">
+        <div className="landing-focus-target soft-panel mx-auto grid max-w-[1160px] gap-8 rounded-[2rem] p-6 md:grid-cols-[0.9fr_1.1fr] md:p-10">
           <div className="scroll-reveal relative min-h-80 overflow-hidden rounded-3xl bg-[#d9d5c9]">
             <Image src={cms.doctorImageUrl} alt={cms.doctorImageAlt} fill sizes="(min-width: 768px) 45vw, 100vw" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#5f7974]/55 to-transparent" />
@@ -186,8 +186,8 @@ export function LandingPageClient({ initialCms }: { initialCms: SiteCms }) {
         </div>
       </section>
 
-      <section id="contact" className="content-auto scroll-reveal px-4 pb-14 md:px-8">
-        <div className="mx-auto mb-6 max-w-[1160px] overflow-hidden rounded-[2rem] border border-[#c7c1b5] bg-[#faf8ef] shadow-sm">
+      <section id="contact" className="landing-section content-auto scroll-reveal scroll-mt-24 px-4 pb-14 md:px-8">
+        <div className="landing-focus-target mx-auto mb-6 max-w-[1160px] overflow-hidden rounded-[2rem] border border-[#c7c1b5] bg-[#faf8ef] shadow-sm">
           <div className="relative p-8 md:p-10">
             <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#86a197]/16 blur-3xl" />
             <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

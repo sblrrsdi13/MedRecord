@@ -20,6 +20,7 @@ type HeaderProps = {
 export function Header({ cms }: HeaderProps) {
   const [open, setOpen] = React.useState(false);
   const [accountOpen, setAccountOpen] = React.useState(false);
+  const [activeHash, setActiveHash] = React.useState("#home");
   const [sessionChecked, setSessionChecked] = React.useState(false);
   const scrolled = useScroll(10);
   const router = useRouter();
@@ -27,6 +28,18 @@ export function Header({ cms }: HeaderProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const setSession = useAuthStore((state) => state.setSession);
   const clearSession = useAuthStore((state) => state.clearSession);
+  const links = React.useMemo(
+    () => cms.navLinks.length
+      ? cms.navLinks
+      : [
+          { label: "Home", href: "#home" },
+          { label: "Services", href: "#services" },
+          { label: "Departments", href: "#departments" },
+          { label: "Doctors", href: "#doctors" },
+          { label: "Contact", href: "#contact" }
+        ],
+    [cms.navLinks]
+  );
 
   React.useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -39,6 +52,33 @@ export function Header({ cms }: HeaderProps) {
   React.useEffect(() => {
     setOpen(false);
   }, [scrolled]);
+
+  React.useEffect(() => {
+    const sectionIds = links
+      .map((link) => getHashFromHref(link.href)?.slice(1))
+      .filter((id): id is string => Boolean(id));
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => Boolean(section));
+
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntry = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (visibleEntry?.target.id) {
+          setActiveHash(`#${visibleEntry.target.id}`);
+        }
+      },
+      { threshold: [0.28, 0.45, 0.62], rootMargin: "-22% 0px -52% 0px" }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [links]);
 
   React.useEffect(() => {
     let mounted = true;
@@ -68,15 +108,6 @@ export function Header({ cms }: HeaderProps) {
     };
   }, [accessToken, clearSession, sessionChecked, setSession, user]);
 
-  const links = cms.navLinks.length
-    ? cms.navLinks
-    : [
-        { label: "Home", href: "#home" },
-        { label: "Services", href: "#services" },
-        { label: "Departments", href: "#departments" },
-        { label: "Doctors", href: "#doctors" },
-        { label: "Contact", href: "#contact" }
-      ];
   const accountHref = user?.role === "PATIENT" ? "/patient-portal" : "/dashboard";
 
   async function handleLogout() {
@@ -88,6 +119,29 @@ export function Header({ cms }: HeaderProps) {
       setAccountOpen(false);
       router.push("/login");
     }
+  }
+
+  function handleAnchorClick(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    const hash = getHashFromHref(href);
+    const isSamePageHash = hash && (href.startsWith("#") || href.startsWith("/#") || window.location.pathname === "/");
+
+    if (!hash || !isSamePageHash) {
+      setOpen(false);
+      return;
+    }
+
+    const target = document.querySelector<HTMLElement>(hash);
+    if (!target) {
+      setOpen(false);
+      return;
+    }
+
+    event.preventDefault();
+    setOpen(false);
+    setActiveHash(hash);
+    window.history.pushState(null, "", hash);
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    playSectionAnimationWhenSettled(target);
   }
 
   return (
@@ -123,9 +177,13 @@ export function Header({ cms }: HeaderProps) {
                 key={`${link.label}-${link.href}`}
                 className={buttonVariants({
                   variant: "ghost",
-                  className: "rounded-full px-4 text-[#2a3234] hover:bg-[#e6efe5] hover:text-[#5f7974]"
+                  className: cn(
+                    "rounded-full px-4 text-[#2a3234] transition-all duration-300 hover:bg-[#e6efe5] hover:text-[#5f7974]",
+                    activeHash === getHashFromHref(link.href) && "bg-[#5f7974] text-white shadow-sm hover:bg-[#5f7974] hover:text-white"
+                  )
                 })}
                 href={link.href}
+                onClick={(event) => handleAnchorClick(event, link.href)}
               >
                 {link.label}
               </a>
@@ -228,10 +286,13 @@ export function Header({ cms }: HeaderProps) {
                   key={`${link.label}-${link.href}-mobile`}
                   className={buttonVariants({
                     variant: "ghost",
-                    className: "h-12 justify-start rounded-2xl px-4 text-base font-bold text-[#2a3234] hover:bg-[#e6efe5] hover:text-[#5f7974]"
+                    className: cn(
+                      "h-12 justify-start rounded-2xl px-4 text-base font-bold text-[#2a3234] transition-all duration-300 hover:bg-[#e6efe5] hover:text-[#5f7974]",
+                      activeHash === getHashFromHref(link.href) && "bg-[#5f7974] text-white hover:bg-[#5f7974] hover:text-white"
+                    )
                   })}
                   href={link.href}
-                  onClick={() => setOpen(false)}
+                  onClick={(event) => handleAnchorClick(event, link.href)}
                 >
                   {link.label}
                 </a>
@@ -299,5 +360,49 @@ export function Header({ cms }: HeaderProps) {
   );
 }
 
+function getHashFromHref(href: string) {
+  if (href.startsWith("#")) return href;
+  if (href.startsWith("/#")) return href.slice(1);
+
+  try {
+    const base = typeof window === "undefined" ? "http://localhost" : window.location.origin;
+    const url = new URL(href, base);
+    return url.hash || null;
+  } catch {
+    return null;
+  }
+}
+
+function playSectionAnimationWhenSettled(target: HTMLElement) {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reduceMotion) return;
+
+  let stableFrames = 0;
+  let lastScrollY = window.scrollY;
+  const startedAt = performance.now();
+
+  function tick() {
+    const currentScrollY = window.scrollY;
+    const scrollIsStable = Math.abs(currentScrollY - lastScrollY) < 1;
+    const rect = target.getBoundingClientRect();
+    const targetIsVisible = rect.top < window.innerHeight * 0.72 && rect.bottom > 96;
+
+    stableFrames = scrollIsStable ? stableFrames + 1 : 0;
+    lastScrollY = currentScrollY;
+
+    if ((targetIsVisible && stableFrames >= 4) || performance.now() - startedAt > 1600) {
+      target.classList.remove("section-focus-pop");
+      void target.offsetWidth;
+      target.classList.add("section-focus-pop");
+      window.setTimeout(() => target.classList.remove("section-focus-pop"), 1200);
+      return;
+    }
+
+    window.requestAnimationFrame(tick);
+  }
+
+  window.requestAnimationFrame(tick);
+}
 
 

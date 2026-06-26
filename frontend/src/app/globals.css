@@ -28,6 +28,11 @@
   --theme-inset: inset 0 1px 0 rgba(255, 255, 255, 0.82), inset 0 -12px 20px rgba(88, 97, 87, 0.07);
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+
 * {
   border-color: hsl(var(--border));
 }
@@ -133,6 +138,42 @@ body {
   }
 }
 
+@keyframes section-focus {
+  0% {
+    opacity: 0;
+    transform: translateY(42px) scale(0.97);
+    filter: blur(10px) saturate(0.82);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1.012);
+    filter: blur(0) saturate(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: saturate(1);
+  }
+}
+
+@keyframes section-card-focus {
+  0% {
+    opacity: 0;
+    transform: translateY(34px) scale(0.94);
+    filter: blur(8px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.015);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
 .sidebar-item {
   animation: nav-enter 260ms ease both;
 }
@@ -147,6 +188,35 @@ body {
 
 .landing-reveal {
   animation: landing-reveal 700ms ease-out both;
+}
+
+.landing-section {
+  scroll-margin-top: 6rem;
+}
+
+.landing-section.section-focus-pop .landing-focus-target {
+  animation: section-focus 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-section.section-focus-pop .landing-card,
+.landing-section.section-focus-pop .soft-panel,
+.landing-section.section-focus-pop .scroll-reveal {
+  animation: section-card-focus 860ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-section.section-focus-pop .landing-card:nth-child(2),
+.landing-section.section-focus-pop .scroll-reveal:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.landing-section.section-focus-pop .landing-card:nth-child(3),
+.landing-section.section-focus-pop .scroll-reveal:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.landing-section.section-focus-pop .landing-card:nth-child(4),
+.landing-section.section-focus-pop .scroll-reveal:nth-child(4) {
+  animation-delay: 230ms;
 }
 
 .landing-swipe {
@@ -205,6 +275,13 @@ body {
     opacity: 1;
     transform: none;
     filter: none;
+  }
+
+  .landing-section.section-focus-pop .landing-focus-target,
+  .landing-section.section-focus-pop .landing-card,
+  .landing-section.section-focus-pop .soft-panel,
+  .landing-section.section-focus-pop .scroll-reveal {
+    animation: none;
   }
 }
 
